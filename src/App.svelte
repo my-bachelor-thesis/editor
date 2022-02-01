@@ -17,26 +17,37 @@
     let solution2 = ""
     let prevSolution2 = ""
     let showTest1 = false
+    let showTest2 = false
     let showSolution1 = false
+    let showSolution2 = false
 
     let numberOfBoxes = 1
     let boxWidth = 0
     let boxHeight = 0
 
-    let showSolutionsAndTestsSelector = false
-    let solutionSelector1 = ""
-    let testSelector1 = ""
-    let solutionsAndTasks = Promise.resolve([])
+    let showSolutionsAndTestsSelector1 = false
+    let showSolutionsAndTestsSelector2 = false
+    let solutionSelector1 = 0
+    let solutionSelector2 = 0
+    let testSelector1 = 0
+    let testSelector2 = 0
+    let solutionsAndTasks1 = Promise.resolve([])
+    let solutionsAndTasks2 = Promise.resolve([])
 
     let showTest1Result = false
     let promiseTest1Result = Promise.resolve([])
     let showTest2Result = false
     let promiseTest2Result = Promise.resolve([])
 
+    let tests1 = new Map()
+    let tests2 = new Map()
+    let solutions1 = new Map()
+    let solutions2 = new Map()
+
     // tests and solutions //
 
-    async function fetchCodeOfTest(id) {
-        const res = await fetch(`http://localhost:9000/code-of-test/${id}`)
+    async function fetchJson(url) {
+        const res = await fetch(url)
         const data = await res.json()
         if (res.ok) {
             return data
@@ -45,14 +56,12 @@
         }
     }
 
+    async function fetchCodeOfTest(id) {
+        return fetchJson(`http://localhost:9000/code-of-test/${id}`)
+    }
+
     async function fetchCodeOfSolution(id) {
-        const res = await fetch(`http://localhost:9000/code-of-solution/${id}`)
-        const data = await res.json()
-        if (res.ok) {
-            return data
-        } else {
-            throw new Error(data)
-        }
+        return fetchJson(`http://localhost:9000/code-of-solution/${id}`)
     }
 
     function setTest1() {
@@ -62,10 +71,24 @@
         })
     }
 
+    function setTest2() {
+        fetchCodeOfTest(testSelector2).then((data) => {
+            test2 = data.code
+            prevTest2 = test2
+        })
+    }
+
     function setSolution1() {
         fetchCodeOfSolution(solutionSelector1).then((data) => {
             solution1 = data.code
             prevSolution1 = solution1
+        })
+    }
+
+    function setSolution2() {
+        fetchCodeOfSolution(solutionSelector2).then((data) => {
+            solution2 = data.code
+            prevSolution2 = solution2
         })
     }
 
@@ -78,10 +101,28 @@
         }
     }
 
+    function resetTest2() {
+        test2 = prevTest2
+        if (!showTest2) {
+            showTest2 = true
+            numberOfBoxes++
+            resizeBoxSize()
+        }
+    }
+
     function resetSolution1() {
         solution1 = prevSolution1
         if (!showSolution1) {
             showSolution1 = true
+            numberOfBoxes++
+            resizeBoxSize()
+        }
+    }
+
+    function resetSolution2() {
+        solution2 = prevSolution2
+        if (!showSolution2) {
+            showSolution2 = true
             numberOfBoxes++
             resizeBoxSize()
         }
@@ -98,44 +139,59 @@
             showTest1 = true
             numberOfBoxes++
         }
-        showSolutionsAndTestsSelector = true
-        solutionsAndTasks = fetchSolutionsAndTasks(languageName1)
-        resizeBoxSize()
+        showSolutionsAndTestsSelector1 = true
+        solutionsAndTasks1 = fetchSolutionsAndTasks(languageName1)
+        solutionsAndTasks1.then((data) => {
+            solutions1 = data.solutions
+            tests1 = data.tests
+            resizeBoxSize()
+        })
     }
 
     function changeLanguage2() {
-        // do something
+        if (!showSolution2) {
+            showSolution2 = true
+            numberOfBoxes++
+        }
+        if (!showTest2) {
+            showTest2 = true
+            numberOfBoxes++
+        }
+        showSolutionsAndTestsSelector2 = true
+        solutionsAndTasks2 = fetchSolutionsAndTasks(languageName2)
+        solutionsAndTasks2.then((data) => {
+            solutions2 = data.solutions
+            tests2 = data.tests
+            resizeBoxSize()
+        })
     }
 
     async function fetchSolutionsAndTasks(language) {
-        const res = await fetch(`http://localhost:9000/solutions-tests/${taskId}/${language}`)
-        const data = await res.json()
-        if (res.ok) {
-            return data
-        } else {
-            throw new Error(data)
-        }
+        return fetchJson(`http://localhost:9000/solutions-tests/${taskId}/${language}`)
     }
 
     // resize boxes //
 
     function resizeBoxSize() {
-        boxWidth = window.innerWidth / (1.01 + 0.01 * numberOfBoxes) / numberOfBoxes
+        boxWidth = window.innerWidth / (1.01 + 0.02 * numberOfBoxes) / numberOfBoxes
         boxHeight = window.innerHeight / 1.8
     }
 
     // run test //
 
-    async function fetchTestResults(solution, test, lang) {
-        const res = await fetch(`http://localhost:9000/test/${lang}`, {
+    async function fetchTestResults(solution, solutionId, test, testId, lang, urlParam = "test") {
+        const res = await fetch(`http://localhost:9000/${urlParam}/${lang}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                solution: solution1,
-                test: test1
+                solution: solution,
+                solution_id: parseInt(solutionId),
+                test: test,
+                test_id: parseInt(testId),
+                task_id: parseInt(taskId)
             })
         })
         const data = await res.json()
@@ -146,26 +202,112 @@
         }
     }
 
+    // run test 1 //
+
     function runTest1HandleClick() {
         showTest1Result = true
-        promiseTest1Result = fetchTestResults(solution1, test1, languageName1)
+        promiseTest1Result = fetchTestResults(solution1, solutionSelector1, test1, testSelector1, languageName1)
     }
+
+    function runTest1AndSave(urlParam) {
+        showTest1Result = true
+        promiseTest1Result = fetchTestResults(solution1, solutionSelector1, test1, testSelector1, languageName1, urlParam)
+    }
+
+    function runTest1AndSaveSolutionHandleClick() {
+        runTest1AndSave("test-and-save-solution")
+        promiseTest1Result.then(async (data) => {
+            solutionSelector1 = data.solution.id
+            solutions1[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
+            prevSolution1 = solution1
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("solution1-picker-select").value = data.solution.id
+        })
+    }
+
+    function runTest1AndSaveTestHandleClick() {
+        runTest1AndSave("test-and-save-test")
+        promiseTest1Result.then(async (data) => {
+            testSelector1 = data.test.id
+            tests1[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
+            prevTest1 = test1
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("test1-picker-select").value = data.test.id
+        })
+    }
+
+    function runTest1AndSaveBothHandleClick() {
+        runTest1AndSave("test-and-save-both")
+        promiseTest1Result.then(async (data) => {
+            testSelector1 = data.test.id
+            tests1[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
+            prevTest1 = test1
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("test1-picker-select").value = data.test.id
+
+            solutionSelector1 = data.solution.id
+            solutions1[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
+            prevSolution1 = solution1
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("solution1-picker-select").value = data.solution.id
+        })
+    }
+
+    // run test 2 //
 
     function runTest2HandleClick() {
         showTest2Result = true
-        promiseTest2Result = fetchTestResults()
+        promiseTest2Result = fetchTestResults(solution2, solutionSelector2, test2, testSelector2, languageName2)
+    }
+
+    function runTest2AndSave(urlParam) {
+        showTest2Result = true
+        promiseTest2Result = fetchTestResults(solution2, solutionSelector2, test2, testSelector2, languageName2, urlParam)
+    }
+
+    function runTest2AndSaveSolutionHandleClick() {
+        runTest2AndSave("test-and-save-solution")
+        promiseTest2Result.then(async (data) => {
+            solutionSelector2 = data.solution.id
+            solutions2[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
+            prevSolution2 = solution2
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("solution2-picker-select").value = data.solution.id
+        })
+    }
+
+    function runTest2AndSaveTestHandleClick() {
+        runTest2AndSave("test-and-save-test")
+        promiseTest2Result.then(async (data) => {
+            testSelector2 = data.test.id
+            tests2[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
+            prevTest2 = test2
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("test2-picker-select").value = data.test.id
+        })
+    }
+
+    function runTest2AndSaveBothHandleClick() {
+        runTest2AndSave("test-and-save-both")
+        promiseTest2Result.then(async (data) => {
+            testSelector2 = data.test.id
+            tests2[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
+            prevTest2 = test2
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("test2-picker-select").value = data.test.id
+
+            solutionSelector2 = data.solution.id
+            solutions2[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
+            prevSolution2 = solution2
+            await new Promise(r => setTimeout(r, 50));
+            document.getElementById("solution2-picker-select").value = data.solution.id
+        })
     }
 
     // initial loading //
 
     async function getInitValues() {
-        const res = await fetch(`http://localhost:9000/init-data/${taskId}`)
-        const data = await res.json()
-        if (res.ok) {
-            return data
-        } else {
-            throw new Error(data)
-        }
+        return fetchJson(`http://localhost:9000/init-data/${taskId}`)
     }
 
     // call on start //
@@ -175,8 +317,9 @@
     });
 
     resizeBoxSize()
-
 </script>
+
+<!---------------------------------------- html starts here ---------------------------------------->
 
 <!-- initial info -->
 
@@ -199,8 +342,8 @@
     {#await initValues}
         <p>Loading languages...</p>
     {:then res}
-        <label for="language-picker-select"><b>First language:</b></label>
-        <select name="language-picker-select" id="language-picker-select" bind:value={languageName1}
+        <label for="language1-picker-select"><b>First language:</b></label>
+        <select name="language1-picker-select" id="language1-picker-select" bind:value={languageName1}
                 on:change={changeLanguage1}>
             {#each res.languages as lang}
                 <option value={lang}>{lang}</option>
@@ -208,15 +351,16 @@
         </select>
 
         &nbsp;
-        {#if showSolutionsAndTestsSelector}
-            {#await solutionsAndTasks}
+        {#if showSolutionsAndTestsSelector1}
+            {#await solutionsAndTasks1}
                 <p>Loading Solutions...</p>
             {:then res}
-                <label for="solution-picker-select"><b>Select from solutions:</b></label>
-                <select name="solution-picker-select" id="solution-picker-select" bind:value={solutionSelector1}
+                <label for="solution1-picker-select"><b>Select from solutions:</b></label>
+                <select name="solution1-picker-select" id="solution1-picker-select" bind:value={solutionSelector1}
                         on:change={setSolution1}>
-                    {#each Object.entries(res.solutions) as [id, info]}
-                        <option value={id}>{info.date}</option>
+                    {#each Object.entries(solutions1) as [id, info]}
+                        <option value={id} class="{info.exit_code != 0 ? 'error-msg' : ''}">{info.date}
+                            <span>{info.exit_code != 0 ? '(failed)' : ''}</span></option>
                     {/each}
                 </select>
 
@@ -224,11 +368,13 @@
                 <span class="reset-text" on:click={resetSolution1}>click to reset solution</span>
                 &nbsp;
 
-                <label for="test-picker-select"><b>Select from test:</b></label>
-                <select name="test-picker-select" id="test-picker-select" bind:value={testSelector1}
+                <label for="test1-picker-select"><b>Select from test:</b></label>
+                <select name="test1-picker-select" id="test1-picker-select" bind:value={testSelector1}
                         on:change={setTest1}>
-                    {#each Object.entries(res.tests) as [id, info]}
-                        <option value={id}>{info.date}</option>
+                    <option value=null selected disabled>pick</option>
+                    {#each Object.entries(tests1) as [id, info]}
+                        <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
+                            <span>{info.final ? '(final)' : ''}</span></option>
                     {/each}
                 </select>
 
@@ -241,13 +387,47 @@
 
         <br>
 
-        <label for="language2-picker-select"><b>Second language:</b></label>
+        <label for="language2-picker-select"><b>First language:</b></label>
         <select name="language2-picker-select" id="language2-picker-select" bind:value={languageName2}
                 on:change={changeLanguage2}>
             {#each res.languages as lang}
                 <option value={lang}>{lang}</option>
             {/each}
         </select>
+
+        {#if showSolutionsAndTestsSelector2}
+            {#await solutionsAndTasks2}
+                <p>Loading Solutions...</p>
+            {:then res}
+                <label for="solution2-picker-select"><b>Select from solutions:</b></label>
+                <select name="solution2-picker-select" id="solution2-picker-select" bind:value={solutionSelector2}
+                        on:change={setSolution2}>
+                    {#each Object.entries(solutions2) as [id, info]}
+                        <option value={id} class="{info.exit_code != 0 ? 'error-msg' : ''}">{info.date}
+                            <span>{info.exit_code != 0 ? '(failed)' : ''}</span></option>
+                    {/each}
+                </select>
+
+                &nbsp;
+                <span class="reset-text" on:click={resetSolution2}>click to reset solution</span>
+                &nbsp;
+
+                <label for="test2-picker-select"><b>Select from test:</b></label>
+                <select name="test2-picker-select" id="test2-picker-select" bind:value={testSelector2}
+                        on:change={setTest2}>
+                    <option value=null selected disabled>pick</option>
+                    {#each Object.entries(tests2) as [id, info]}
+                        <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
+                            <span>{info.final ? '(final)' : ''}</span></option>
+                    {/each}
+                </select>
+
+                &nbsp;
+                <span class="reset-text" on:click={resetTest2}>click to reset test</span>
+            {:catch error}
+                <p style="color: red">{error.message}</p>
+            {/await}
+        {/if}
     {:catch error}
         <p style="color: red">{error.message}</p>
     {/await}
@@ -260,7 +440,7 @@
 {:then res}
     <div class="box">
         <p><b>description</b></p>
-        <textarea style="width: {boxWidth}px; height: {boxHeight}px">{res.text}</textarea>
+        <textarea readonly style="white-space: normal;width: {boxWidth}px; height: {boxHeight}px;">{res.text}</textarea>
     </div>
 {:catch error}
     <p style="color: red">{error.message}</p>
@@ -268,8 +448,8 @@
 
 {#if showSolution1}
     <div class="box">
-        <p><b>solution</b>&nbsp;<span class="remove-text"
-                                      on:click={() => {showSolution1 = false;numberOfBoxes--;resizeBoxSize()}}>click to remove</span>
+        <p><b>solution 1</b>&nbsp;<span class="remove-text"
+                                        on:click={() => {showSolution1 = false;numberOfBoxes--;resizeBoxSize()}}>click to remove</span>
         </p>
         <textarea bind:value={solution1}
                   style="width: {boxWidth}px; height: {boxHeight}px"></textarea>
@@ -278,10 +458,30 @@
 
 {#if showTest1}
     <div class="box">
-        <p><b>test</b>&nbsp;<span class="remove-text"
-                                  on:click={() => {showTest1 = false;numberOfBoxes--;resizeBoxSize()}}>click to remove</span>
+        <p><b>test 1</b>&nbsp;<span class="remove-text"
+                                    on:click={() => {showTest1 = false;numberOfBoxes--;resizeBoxSize()}}>click to remove</span>
         </p>
         <textarea bind:value={test1}
+                  style="width: {boxWidth}px; height: {boxHeight}px"></textarea>
+    </div>
+{/if}
+
+{#if showSolution2}
+    <div class="box">
+        <p><b>solution 2</b>&nbsp;<span class="remove-text"
+                                        on:click={() => {showSolution2 = false;numberOfBoxes--;resizeBoxSize()}}>click to remove</span>
+        </p>
+        <textarea bind:value={solution2}
+                  style="width: {boxWidth}px; height: {boxHeight}px"></textarea>
+    </div>
+{/if}
+
+{#if showTest2}
+    <div class="box">
+        <p><b>test 2</b>&nbsp;<span class="remove-text"
+                                    on:click={() => {showTest2 = false;numberOfBoxes--;resizeBoxSize()}}>click to remove</span>
+        </p>
+        <textarea bind:value={test2}
                   style="width: {boxWidth}px; height: {boxHeight}px"></textarea>
     </div>
 {/if}
@@ -290,81 +490,109 @@
 
 <br>
 
-<div id="test-result-1">
-    <button type="button" on:click={runTest1HandleClick}>
-        Test
-    </button>
+{#if languageName1}
+    <div id="test-result-1">
+        <button type="button" on:click={runTest1HandleClick}>
+            Run 1. language
+        </button>
 
-    <br>
+        <button type="button" on:click={runTest1AndSaveSolutionHandleClick}>
+            Run and save solution
+        </button>
 
-    {#if showTest1Result}
-        {#await promiseTest1Result}
-            <p>loading...</p>
-        {:then res}
-            {#if res.exit_code === 1}
-                <p><b>couldn't compile</b></p>
-                <textarea readonly rows="25" cols="50">{res.out.replaceAll('^', '\n')}</textarea>
-            {:else}
-                {#if res.exit_code === 2}
-                    <p><b>test failed</b></p>
-                    <textarea readonly rows="25" cols="50">{res.out.replaceAll('^', '\n')}</textarea>
+        <button type="button" on:click={runTest1AndSaveTestHandleClick}>
+            Run and save test
+        </button>
+
+        <button type="button" on:click={runTest1AndSaveBothHandleClick}>
+            Run and save both
+        </button>
+
+        <br>
+
+        {#if showTest1Result}
+            {#await promiseTest1Result}
+                <p>loading...</p>
+            {:then res}
+                {#if res.solution.exit_code === 1}
+                    <p><b>couldn't compile</b></p>
+                    <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
                 {:else}
-                    <p><b>test OK</b></p>
-                    <p>compilation time: {res.compilation_time} s</p>
-                    <p>real time: {res.real_time} s</p>
-                    <p>kernel time: {res.kernel_time} s</p>
-                    <p>user time: {res.user_time} s</p>
-                    <p>max ram usage: {res.max_ram_usage} mb</p>
-                    <p>binary size: {res.binary_size} mb</p>
-                    <p>test output:</p>
-                    <div class="test-output">{res.out.replaceAll('^', '\n')}</div>
+                    {#if res.solution.exit_code === 2}
+                        <p><b>test failed</b></p>
+                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
+                    {:else}
+                        <p><b>test OK</b></p>
+                        <p>compilation time: {res.solution.compilation_time} s</p>
+                        <p>real time: {res.solution.real_time} s</p>
+                        <p>kernel time: {res.solution.kernel_time} s</p>
+                        <p>user time: {res.solution.user_time} s</p>
+                        <p>max ram usage: {res.solution.max_ram_usage} mb</p>
+                        <p>binary size: {res.solution.binary_size} mb</p>
+                        <p>test output:</p>
+                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
+                    {/if}
                 {/if}
-            {/if}
-        {:catch error}
-            <p style="color: red">{error.message}</p>
-        {/await}
-    {/if}
-</div>
+            {:catch error}
+                <p style="color: red">{error.message}</p>
+            {/await}
+        {/if}
+    </div>
+{/if}
 
 <!-- test results 2 -->
 
-<div id="test-result-2">
-    <button type="button" on:click={runTest2HandleClick}>
-        Test
-    </button>
+{#if languageName2}
+    <div id="test-result-2">
+        <button type="button" on:click={runTest2HandleClick}>
+            Run 2. language
+        </button>
 
-    <br>
+        <button type="button" on:click={runTest2AndSaveSolutionHandleClick}>
+            Run and save solution
+        </button>
 
-    {#if showTest2Result}
-        {#await promiseTest2Result}
-            <p>loading...</p>
-        {:then res}
-            {#if res.exit_code === 1}
-                <p><b>couldn't compile</b></p>
-                <textarea readonly rows="25" cols="50">{res.out.replaceAll('^', '\n')}</textarea>
-            {:else}
-                {#if res.exit_code === 2}
-                    <p><b>test failed</b></p>
-                    <textarea readonly rows="25" cols="50">{res.out.replaceAll('^', '\n')}</textarea>
+        <button type="button" on:click={runTest2AndSaveTestHandleClick}>
+            Run and save test
+        </button>
+
+        <button type="button" on:click={runTest2AndSaveBothHandleClick}>
+            Run and save both
+        </button>
+
+        <br>
+
+        {#if showTest2Result}
+            {#await promiseTest2Result}
+                <p>loading...</p>
+            {:then res}
+                {#if res.solution.exit_code === 1}
+                    <p><b>couldn't compile</b></p>
+                    <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
                 {:else}
-                    <p><b>test OK</b></p>
-                    <p>compilation time: {res.compilation_time} s</p>
-                    <p>real time: {res.real_time} s</p>
-                    <p>kernel time: {res.kernel_time} s</p>
-                    <p>user time: {res.user_time} s</p>
-                    <p>max ram usage: {res.max_ram_usage} mb</p>
-                    <p>binary size: {res.binary_size} mb</p>
-                    <p>test output:</p>
-                    <p>{res.out.replaceAll('^', '\n')}</p>
+                    {#if res.solution.exit_code === 2}
+                        <p><b>test failed</b></p>
+                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
+                    {:else}
+                        <p><b>test OK</b></p>
+                        <p>compilation time: {res.solution.compilation_time} s</p>
+                        <p>real time: {res.solution.real_time} s</p>
+                        <p>kernel time: {res.solution.kernel_time} s</p>
+                        <p>user time: {res.solution.user_time} s</p>
+                        <p>max ram usage: {res.solution.max_ram_usage} mb</p>
+                        <p>binary size: {res.solution.binary_size} mb</p>
+                        <p>test output:</p>
+                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
+                    {/if}
                 {/if}
-            {/if}
-        {:catch error}
-            <p style="color: red">{error.message}</p>
-        {/await}
-    {/if}
-</div>
+            {:catch error}
+                <p style="color: red">{error.message}</p>
+            {/await}
+        {/if}
+    </div>
+{/if}
 
-<!-- styles -->
+<!---------------------------------------- styles ---------------------------------------->
 
 <style>
     .selector label {
@@ -385,9 +613,10 @@
         overflow-x: scroll;
         /*height: 100px;*/
         /*width: 400px;*/
-        resize: none;
-        /*resize: vertical;*/
-        /*resize: horizontal;*/
+        /*resize: none;*/
+        resize: vertical;
+        resize: horizontal;
+        /*resize: both;*/
         white-space: nowrap;
     }
 
@@ -401,7 +630,7 @@
     .reset-text {
         border-style: solid;
         border-width: thin;
-        color: darkcyan;
+        color: darkgoldenrod;
         padding: 0.1%;
     }
 
@@ -419,5 +648,9 @@
         white-space: pre-wrap;
         border-style: solid;
         border-width: thin;
+    }
+
+    .error-msg {
+        color: red;
     }
 </style>
