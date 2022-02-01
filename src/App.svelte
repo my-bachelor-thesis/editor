@@ -515,14 +515,14 @@
                 <p>loading...</p>
             {:then res}
                 {#if res.solution.exit_code === 1}
-                    <p><b>couldn't compile</b></p>
+                    <p class="error-msg"><b>couldn't compile</b></p>
                     <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
                 {:else}
                     {#if res.solution.exit_code === 2}
-                        <p><b>test failed</b></p>
+                        <p class="error-msg"><b>test failed</b></p>
                         <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
                     {:else}
-                        <p><b>test OK</b></p>
+                        <p class="success-msg"><b>test OK</b></p>
                         <p>compilation time: {res.solution.compilation_time} s</p>
                         <p>real time: {res.solution.real_time} s</p>
                         <p>kernel time: {res.solution.kernel_time} s</p>
@@ -567,14 +567,14 @@
                 <p>loading...</p>
             {:then res}
                 {#if res.solution.exit_code === 1}
-                    <p><b>couldn't compile</b></p>
+                    <p class="error-msg"><b>couldn't compile</b></p>
                     <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
                 {:else}
                     {#if res.solution.exit_code === 2}
-                        <p><b>test failed</b></p>
+                        <p class="error-msg"><b>test failed</b></p>
                         <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
                     {:else}
-                        <p><b>test OK</b></p>
+                        <p class="success-msg"><b>test OK</b></p>
                         <p>compilation time: {res.solution.compilation_time} s</p>
                         <p>real time: {res.solution.real_time} s</p>
                         <p>kernel time: {res.solution.kernel_time} s</p>
@@ -652,5 +652,9 @@
 
     .error-msg {
         color: red;
+    }
+
+    .success-msg {
+        color: green;
     }
 </style>
