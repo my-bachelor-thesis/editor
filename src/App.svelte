@@ -1,31 +1,45 @@
+<svelte:head>
+    <link rel="stylesheet" href="/css/bootstrap.min.5.1.3.css">
+</svelte:head>
+
 <script>
     import Split from 'split-grid'
-    import {EditorState, basicSetup} from "@codemirror/basic-setup"
+    import {basicSetup, EditorState} from "@codemirror/basic-setup"
     import {EditorView, keymap} from "@codemirror/view"
     import {indentWithTab} from "@codemirror/commands"
     import {go} from "@codemirror/legacy-modes/mode/go"
     import {StreamLanguage} from "@codemirror/stream-parser"
     import {python} from "@codemirror/lang-python"
+    import {Button, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader,} from 'sveltestrap';
 
     // variables //
+
+    let openSolution1Name = false, openTest1Name = false, openSolution2Name = false, openTest2Name = false
+    const toggleSolution1Name = () => (openSolution1Name = !openSolution1Name)
+    const toggleTest1Name = () => (openTest1Name = !openTest1Name)
+    const toggleSolution2Name = () => (openSolution2Name = !openSolution2Name)
+    const toggleTest2Name = () => (openTest2Name = !openTest2Name)
+    let solution1Name = "", test1Name = "", solution2Name = "", test2Name = ""
 
     const taskId = new URLSearchParams(window.location.search).get('id')
     const initValues = getInitValues()
 
-    let languageName1 = ""
-    let languageName2 = ""
+    let languageName1 = "", languageName2 = ""
 
-    let solution1Editor = ""
-    let test1Editor = ""
-    // $: solution1 = (typeof solution1Editor) === "object" ? solution1Editor.state.doc.toString() : ""
-    // $: test1 = (typeof test1Editor) === "object" ? test1Editor.state.doc.toString() : ""
+    let showNotFailedSolutions = false, showFinalTests = false
+
+    let solution1Editor, test1Editor, solution2Editor, test2Editor
+
     let test1FromLastRun = "", test1Unchanged = "", test2FromLastRun = "", test2Unchanged = ""
     let solution1FromLastRun = "", solution1Unchanged = "", solution2FromLastRun = "", solution2Unchanged = ""
 
     let showTest1 = false, showTest2 = false, showSolution1 = false, showSolution2 = false
 
-    let numberOfEditors = 0
     let gridStyle = ""
+    let numberOfEditors = 0
+    $: if (numberOfEditors) {
+        gridStyle = "1fr " + "10px 1fr ".repeat(Math.max(0, numberOfEditors - 1))
+    }
 
     let showSolutionsAndTestsSelector1 = false, showSolutionsAndTestsSelector2 = false
     let solutionSelector1 = 0, solutionSelector2 = 0, testSelector1 = 0, testSelector2 = 0
@@ -36,20 +50,28 @@
 
     let tests1 = new Map(), tests2 = new Map(), solutions1 = new Map(), solutions2 = new Map()
 
+    let widthSolution1 = 0, widthTest1 = 0, widthSolution2 = 0, widthTest2 = 0
+    let widthConstant = 0.96
+
+    let infoBoxContent1 = []
+    let infoBoxContent2 = []
+
+    let testResultsCache = new Map()
+
     // helper functions //
 
+    function paringFunction(a, b) {
+        return a + "," + b
+    }
+
     function languageToCodemirrorFunction(language) {
-        switch (language){
+        switch (language) {
             case 'go':
                 return StreamLanguage.define(go)
             case 'python':
                 return python()
         }
 
-    }
-
-    function updateGridStyle() {
-        gridStyle = "1fr " + "10px 1fr ".repeat(Math.max(0, numberOfEditors - 1))
     }
 
     async function fetchJson(url) {
@@ -79,91 +101,10 @@
         return fetchJson(`http://localhost:9000/init-data/${taskId}`)
     }
 
-    // tests and solutions //
-
-    async function fetchCodeOfTest(id) {
-        return fetchJson(`http://localhost:9000/code-of-test/${id}`)
-    }
-
-    async function fetchCodeOfSolution(id) {
-        return fetchJson(`http://localhost:9000/code-of-solution/${id}`)
-    }
-
-    function setSolution1() {
-        fetchCodeOfSolution(solutionSelector1).then((data) => {
-            let code = data.code
-            solution1Editor.dispatch({
-                changes: {from: 0, to: solution1Editor.state.doc.length, insert: code}
-            })
-            solution1Unchanged = code
-            solution1FromLastRun = code
-        })
-    }
-
-    function setTest1() {
-        fetchCodeOfTest(testSelector1).then((data) => {
-            let code = data.code
-            test1Editor.dispatch({
-                changes: {from: 0, to: test1Editor.state.doc.length, insert: code}
-            })
-            test1Unchanged = code
-            test1FromLastRun = code
-        })
-    }
-
-    // function setSolution2() {
-    //     fetchCodeOfSolution(solutionSelector2).then((data) => {
-    //         solution2 = data.code
-    //         prevSolution2 = solution2
-    //     })
-    // }
-    //
-    // function setTest2() {
-    //     fetchCodeOfTest(testSelector2).then((data) => {
-    //         test2 = data.code
-    //         prevTest2 = test2
-    //     })
-    // }
-
-    // function resetTest1() {
-    //     test1 = prevTest1
-    //     if (!showTest1) {
-    //         showTest1 = true
-    //         numberOfBoxes++
-    //         resizeBoxSize()
-    //     }
-    // }
-    //
-    // function resetTest2() {
-    //     test2 = prevTest2
-    //     if (!showTest2) {
-    //         showTest2 = true
-    //         numberOfBoxes++
-    //         resizeBoxSize()
-    //     }
-    // }
-    //
-    // function resetSolution1() {
-    //     solution1 = prevSolution1
-    //     if (!showSolution1) {
-    //         showSolution1 = true
-    //         numberOfBoxes++
-    //         resizeBoxSize()
-    //     }
-    // }
-    //
-    // function resetSolution2() {
-    //     solution2 = prevSolution2
-    //     if (!showSolution2) {
-    //         showSolution2 = true
-    //         numberOfBoxes++
-    //         resizeBoxSize()
-    //     }
-    // }
-
     // change language//
 
     function changeLanguage1() {
+        infoBoxContent1 = []
         numberOfEditors++
         if (!showSolution1) {
             showSolution1 = true
@@ -194,7 +135,6 @@
         (async () => {
             await waitForElement("solution1")
             await waitForElement("test1")
-            updateGridStyle()
             Split({
                 columnGutters: [{
                     track: 1,
@@ -213,31 +153,128 @@
         })
     }
 
-    // function changeLanguage2() {
-    //     if (!showSolution2) {
-    //         showSolution2 = true
-    //         numberOfBoxes++
-    //     }
-    //     if (!showTest2) {
-    //         showTest2 = true
-    //         numberOfBoxes++
-    //     }
-    //     showSolutionsAndTestsSelector2 = true
-    //     solutionsAndTasks2 = fetchSolutionsAndTasks(languageName2)
-    //     solutionsAndTasks2.then((data) => {
-    //         solutions2 = data.solutions
-    //         tests2 = data.tests
-    //         resizeBoxSize()
-    //     })
-    // }
+    function changeLanguage2() {
+        infoBoxContent2 = []
+        if (!showSolution2) {
+            showSolution2 = true
+            numberOfEditors++
+            (async () => {
+                await waitForElement("solution2")
+                solution2Editor = new EditorView({
+                    state: EditorState.create({
+                        extensions: [basicSetup, keymap.of([indentWithTab]), languageToCodemirrorFunction(languageName2)],
+                    }),
+                    parent: document.getElementById("solution2"),
+                });
+            })()
+        }
+        if (!showTest2) {
+            showTest2 = true
+            numberOfEditors++
+            (async () => {
+                await waitForElement("test2")
+                test2Editor = new EditorView({
+                    state: EditorState.create({
+                        extensions: [basicSetup, keymap.of([indentWithTab]), languageToCodemirrorFunction(languageName2)],
+                    }),
+                    parent: document.getElementById("test2"),
+                });
+            })()
+        }
+        (async () => {
+            await waitForElement("solution2")
+            await waitForElement("test2")
+            Split({
+                columnGutters: [{
+                    track: 5,
+                    element: document.querySelector('.gutter-col-5'),
+                }, {
+                    track: 7,
+                    element: document.querySelector('.gutter-col-7'),
+                }],
+            })
+        })()
+        showSolutionsAndTestsSelector2 = true
+        solutionsAndTasks2 = fetchSolutionsAndTasks(languageName2)
+        solutionsAndTasks2.then((data) => {
+            solutions2 = data.solutions
+            tests2 = data.tests
+        })
+    }
 
     async function fetchSolutionsAndTasks(language) {
         return fetchJson(`http://localhost:9000/solutions-tests/${taskId}/${language}`)
     }
 
-    // run test //
+    // tests and solutions in editors //
 
-    async function fetchTestResults(solution, solutionId, test, testId, lang, urlParam = "test") {
+    async function fetchCodeOfTest(id) {
+        return fetchJson(`http://localhost:9000/code-of-test/${id}`)
+    }
+
+    async function fetchCodeOfSolution(id) {
+        return fetchJson(`http://localhost:9000/code-of-solution/${id}`)
+    }
+
+    function insertSelectedSolution1IntoEditor() {
+        infoBoxContent1 = []
+        showTest1Result = false
+        loadResultFromCache1()
+        fetchCodeOfSolution(solutionSelector1).then((data) => {
+            let code = data.code
+            solution1Editor.dispatch({
+                changes: {from: 0, to: solution1Editor.state.doc.length, insert: code}
+            })
+            solution1Unchanged = code
+            solution1FromLastRun = code
+        })
+    }
+
+    function insertSelectedTest1IntoEditor() {
+        infoBoxContent1 = []
+        showTest1Result = false
+        loadResultFromCache1()
+        fetchCodeOfTest(testSelector1).then((data) => {
+            let code = data.code
+            test1Editor.dispatch({
+                changes: {from: 0, to: test1Editor.state.doc.length, insert: code}
+            })
+            test1Unchanged = code
+            test1FromLastRun = code
+        })
+    }
+
+    function insertSelectedSolution2IntoEditor() {
+        infoBoxContent2 = []
+        showTest2Result = false
+        loadResultFromCache2()
+        fetchCodeOfSolution(solutionSelector2).then((data) => {
+            let code = data.code
+            solution2Editor.dispatch({
+                changes: {from: 0, to: solution2Editor.state.doc.length, insert: code}
+            })
+            solution2Unchanged = code
+            solution2FromLastRun = code
+        })
+    }
+
+    function insertSelectedTest2IntoEditor() {
+        infoBoxContent2 = []
+        showTest2Result = false
+        loadResultFromCache2()
+        fetchCodeOfTest(testSelector2).then((data) => {
+            let code = data.code
+            test2Editor.dispatch({
+                changes: {from: 0, to: test2Editor.state.doc.length, insert: code}
+            })
+            test2Unchanged = code
+            test2FromLastRun = code
+        })
+    }
+
+    // run test and save //
+
+    async function fetchTestResults(solution, solutionId, test, testId, lang, urlParam) {
         const res = await fetch(`http://localhost:9000/${urlParam}/${lang}`, {
             method: 'POST',
             headers: {
@@ -263,107 +300,165 @@
     // run test 1 //
 
     function runTest1HandleClick() {
-        showTest1Result = true
-        promiseTest1Result = fetchTestResults(solution1Editor.state.doc.toString(), solutionSelector1, test1Editor.state.doc.toString(), testSelector1, languageName1)
-    }
+        infoBoxContent1 = []
 
-    // function runTest1AndSave(urlParam) {
-    //     showTest1Result = true
-    //     promiseTest1Result = fetchTestResults(solution1, solutionSelector1, test1, testSelector1, languageName1, urlParam)
-    // }
-    //
-    // function runTest1AndSaveSolutionHandleClick() {
-    //     runTest1AndSave("test-and-save-solution")
-    //     promiseTest1Result.then(async (data) => {
-    //         solutionSelector1 = data.solution.id
-    //         solutions1[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
-    //         prevSolution1 = solution1
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("solution1-picker-select").value = data.solution.id
-    //     })
-    // }
-    //
-    // function runTest1AndSaveTestHandleClick() {
-    //     runTest1AndSave("test-and-save-test")
-    //     promiseTest1Result.then(async (data) => {
-    //         testSelector1 = data.test.id
-    //         tests1[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
-    //         prevTest1 = test1
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("test1-picker-select").value = data.test.id
-    //     })
-    // }
-    //
-    // function runTest1AndSaveBothHandleClick() {
-    //     runTest1AndSave("test-and-save-both")
-    //     promiseTest1Result.then(async (data) => {
-    //         testSelector1 = data.test.id
-    //         tests1[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
-    //         prevTest1 = test1
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("test1-picker-select").value = data.test.id
-    //
-    //         solutionSelector1 = data.solution.id
-    //         solutions1[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
-    //         prevSolution1 = solution1
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("solution1-picker-select").value = data.solution.id
-    //     })
-    // }
+        let solutionInEditor = solution1Editor.state.doc.toString()
+        let testInEditor = test1Editor.state.doc.toString()
+
+        if (showTest1Result && solution1FromLastRun === solutionInEditor && testInEditor === test1FromLastRun) {
+            infoBoxContent1.push("nothing changed, not running")
+            return
+        }
+
+        if (solution1FromLastRun !== solutionInEditor && testInEditor !== test1FromLastRun) {
+            infoBoxContent1.push("saving solution, test and running")
+            promiseTest1Result = fetchTestResults(solutionInEditor, solutionSelector1, testInEditor, testSelector1, languageName1, "test-and-save-solution")
+            promiseTest1Result.then(async (data) => {
+                solution1FromLastRun = solutionInEditor
+                solutionSelector1 = data.solution.id
+                solutions1[data.solution.id] = {
+                    'date': data.solution.last_modified,
+                    'exit_code': data.solution.exit_code
+                }
+                await waitForElement("solution1-picker-select")
+                document.getElementById("solution1-picker-select").value = data.solution.id
+
+                test1FromLastRun = testInEditor
+                testSelector1 = data.test_id
+                tests1[data.test_id] = {'date': data.test_last_modified, 'final': false}
+                await waitForElement("test1-picker-select")
+                document.getElementById("test1-picker-select").value = data.test_id
+            })
+
+        } else if (solution1FromLastRun !== solutionInEditor && testInEditor === test1FromLastRun) {
+            infoBoxContent1.push("saving solution and running")
+            promiseTest1Result = fetchTestResults(solutionInEditor, solutionSelector1, testInEditor, testSelector1, languageName1, "test-and-save-both")
+            promiseTest1Result.then(async (data) => {
+                solution1FromLastRun = solutionInEditor
+                solutionSelector1 = data.solution.id
+                solutions1[data.solution.id] = {
+                    'date': data.solution.last_modified,
+                    'exit_code': data.solution.exit_code
+                }
+                await waitForElement("solution1-picker-select")
+                document.getElementById("solution1-picker-select").value = data.solution.id
+            })
+
+        } else if (solution1FromLastRun === solutionInEditor && testInEditor !== test1FromLastRun) {
+            infoBoxContent1.push("saving test and running")
+            promiseTest1Result = fetchTestResults(solutionInEditor, solutionSelector1, testInEditor, testSelector1, languageName1, "test-and-save-test")
+            promiseTest1Result.then(async (data) => {
+                test1FromLastRun = testInEditor
+                testSelector1 = data.test_id
+                tests1[data.test_id] = {'date': data.test_last_modified, 'final': false}
+                await waitForElement("test1-picker-select")
+                document.getElementById("test1-picker-select").value = data.test_id
+            })
+
+        } else {
+            infoBoxContent1.push("running")
+            promiseTest1Result = fetchTestResults(solutionInEditor, solutionSelector1, testInEditor, testSelector1, languageName1, "test")
+        }
+
+        showTest1Result = true
+        promiseTest1Result.then((res) => {
+            testResultsCache.set(paringFunction(solutionSelector1, testSelector1), res)
+        })
+    }
 
     // run test 2 //
 
-    // function runTest2HandleClick() {
-    //     showTest2Result = true
-    //     promiseTest2Result = fetchTestResults(solution2, solutionSelector2, test2, testSelector2, languageName2)
-    // }
-    //
-    // function runTest2AndSave(urlParam) {
-    //     showTest2Result = true
-    //     promiseTest2Result = fetchTestResults(solution2, solutionSelector2, test2, testSelector2, languageName2, urlParam)
-    // }
-    //
-    // function runTest2AndSaveSolutionHandleClick() {
-    //     runTest2AndSave("test-and-save-solution")
-    //     promiseTest2Result.then(async (data) => {
-    //         solutionSelector2 = data.solution.id
-    //         solutions2[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
-    //         prevSolution2 = solution2
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("solution2-picker-select").value = data.solution.id
-    //     })
-    // }
+    function runTest2HandleClick() {
+        infoBoxContent2 = []
 
-    // function runTest2AndSaveTestHandleClick() {
-    //     runTest2AndSave("test-and-save-test")
-    //     promiseTest2Result.then(async (data) => {
-    //         testSelector2 = data.test.id
-    //         tests2[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
-    //         prevTest2 = test2
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("test2-picker-select").value = data.test.id
-    //     })
-    // }
-    //
-    // function runTest2AndSaveBothHandleClick() {
-    //     runTest2AndSave("test-and-save-both")
-    //     promiseTest2Result.then(async (data) => {
-    //         testSelector2 = data.test.id
-    //         tests2[data.test.id] = {'date': data.test.last_modified, 'final': data.test.final}
-    //         prevTest2 = test2
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("test2-picker-select").value = data.test.id
-    //
-    //         solutionSelector2 = data.solution.id
-    //         solutions2[data.solution.id] = {'date': data.solution.last_modified, 'exit_code': data.solution.exit_code}
-    //         prevSolution2 = solution2
-    //         await new Promise(r => setTimeout(r, 50));
-    //         document.getElementById("solution2-picker-select").value = data.solution.id
-    //     })
-    // }
+        let solutionInEditor = solution2Editor.state.doc.toString()
+        let testInEditor = test2Editor.state.doc.toString()
 
-    // initial loading //
+        if (showTest2Result && solution2FromLastRun === solutionInEditor && testInEditor === test2FromLastRun) {
+            infoBoxContent2.push("nothing changed, not running")
+            return
+        }
 
+        if (solution2FromLastRun !== solutionInEditor && testInEditor !== test2FromLastRun) {
+            infoBoxContent2.push("saving solution, test and running")
+            promiseTest2Result = fetchTestResults(solutionInEditor, solutionSelector2, testInEditor, testSelector2, languageName2, "test-and-save-solution")
+            promiseTest2Result.then(async (data) => {
+                solution2FromLastRun = solutionInEditor
+                solutionSelector2 = data.solution.id
+                solutions2[data.solution.id] = {
+                    'date': data.solution.last_modified,
+                    'exit_code': data.solution.exit_code
+                }
+                await waitForElement("solution2-picker-select")
+                document.getElementById("solution2-picker-select").value = data.solution.id
+
+                test2FromLastRun = testInEditor
+                testSelector2 = data.test_id
+                tests2[data.test_id] = {'date': data.test_last_modified, 'final': false}
+                await waitForElement("test2-picker-select")
+                document.getElementById("test2-picker-select").value = data.test_id
+            })
+
+        } else if (solution2FromLastRun !== solutionInEditor && testInEditor === test2FromLastRun) {
+            infoBoxContent2.push("saving solution and running")
+            promiseTest2Result = fetchTestResults(solutionInEditor, solutionSelector2, testInEditor, testSelector2, languageName2, "test-and-save-both")
+            promiseTest2Result.then(async (data) => {
+                solution2FromLastRun = solutionInEditor
+                solutionSelector2 = data.solution.id
+                solutions2[data.solution.id] = {
+                    'date': data.solution.last_modified,
+                    'exit_code': data.solution.exit_code
+                }
+                await waitForElement("solution2-picker-select")
+                document.getElementById("solution2-picker-select").value = data.solution.id
+            })
+
+        } else if (solution2FromLastRun === solutionInEditor && testInEditor !== test2FromLastRun) {
+            infoBoxContent2.push("saving test and running")
+            promiseTest2Result = fetchTestResults(solutionInEditor, solutionSelector2, testInEditor, testSelector2, languageName2, "test-and-save-test")
+            promiseTest2Result.then(async (data) => {
+                test2FromLastRun = testInEditor
+                testSelector2 = data.test_id
+                tests2[data.test_id] = {'date': data.test_last_modified, 'final': false}
+                await waitForElement("test2-picker-select")
+                document.getElementById("test2-picker-select").value = data.test_id
+            })
+
+        } else {
+            infoBoxContent2.push("running")
+            promiseTest2Result = fetchTestResults(solutionInEditor, solutionSelector2, testInEditor, testSelector2, languageName2, "test")
+        }
+
+        showTest2Result = true
+        promiseTest2Result.then((res) => {
+            testResultsCache.set(paringFunction(solutionSelector2, testSelector2), res)
+        })
+    }
+
+    // try loading result from cache //
+    function loadResultFromCache1() {
+        if (testResultsCache.has(paringFunction(solutionSelector1, testSelector1))) {
+            showTest1Result = true
+            promiseTest1Result = new Promise((resolve, reject) => {
+                resolve(testResultsCache.get(paringFunction(solutionSelector1, testSelector1)))
+            })
+            promiseTest1Result.then((res) => {
+                console.log(res)
+            })
+        }
+    }
+
+    function loadResultFromCache2() {
+        if (testResultsCache.has(paringFunction(solutionSelector2, testSelector2))) {
+            showTest2Result = true
+            promiseTest2Result = new Promise((resolve, reject) => {
+                resolve(testResultsCache.get(paringFunction(solutionSelector2, testSelector2)))
+            })
+            promiseTest2Result.then((res) => {
+                console.log(res)
+            })
+        }
+    }
 
 </script>
 
@@ -384,12 +479,33 @@
     {/await}
 </div>
 
+<br>
+
+<fieldset>
+    <legend>Choose filters</legend>
+    <div>
+        <label>
+            <input type="checkbox" bind:checked={showNotFailedSolutions}>
+            show only solutions that didn't fail
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" bind:checked={showFinalTests}>
+            show only final tests
+        </label>
+    </div>
+</fieldset>
+
 <!-- selectors -->
 
 <div class="selector">
     {#await initValues}
         <p>Loading languages...</p>
     {:then res}
+
+        <!-- language 1 -->
+
         <label for="language1-picker-select"><b>First language:</b></label>
         <select name="language1-picker-select" id="language1-picker-select" bind:value={languageName1}
                 on:change={changeLanguage1}>
@@ -405,81 +521,152 @@
             {:then res}
                 <label for="solution1-picker-select"><b>Select from solutions:</b></label>
                 <select name="solution1-picker-select" id="solution1-picker-select" bind:value={solutionSelector1}
-                        on:change={setSolution1}>
+                        on:change={insertSelectedSolution1IntoEditor}>
                     {#each Object.entries(solutions1) as [id, info]}
-                        <option value={id} class="{info.exit_code != 0 ? 'error-msg' : ''}">{info.date}
-                            <span>{info.exit_code != 0 ? '(failed)' : ''}</span></option>
+                        {#if info.exit_code === 0 || !showNotFailedSolutions }
+                            <option value={id} class="{info.exit_code !== 0 ? 'error-msg' : ''}">{info.date}
+                                <span>{info.exit_code !== 0 ? '(failed)' : ''}</span></option>
+                        {/if}
                     {/each}
                 </select>
 
                 &nbsp;
-                <!--                <span class="reset-text" on:click={resetSolution1}>click to reset solution</span>-->
+
+                <Button color="secondary" class="btn-sm" on:click={toggleSolution1Name}>Change name</Button>
+                <Modal isOpen={openSolution1Name} {toggleSolution1Name}>
+                    <ModalHeader {toggleSolution1Name}>Change name</ModalHeader>
+                    <ModalBody>
+                        <FormGroup>
+                            <Label for="changeSolution1Name">Name</Label>
+                            <Input bind:value={solution1Name} id="changeSolution1Name" placeholder="type name here"/>
+                        </FormGroup>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="primary" on:click={toggleSolution1Name}>Change</Button>
+                        <Button color="secondary" on:click={toggleSolution1Name}>Cancel</Button>
+                    </ModalFooter>
+                </Modal>
                 &nbsp;
 
                 <label for="test1-picker-select"><b>Select from test:</b></label>
                 <select name="test1-picker-select" id="test1-picker-select" bind:value={testSelector1}
-                        on:change={setTest1}>
+                        on:change={insertSelectedTest1IntoEditor}>
                     {#each Object.entries(tests1) as [id, info]}
-                        <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
-                            <span>{info.final ? '(final)' : ''}</span></option>
+                        {#if !showFinalTests || info.final}
+                            <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
+                                <span>{info.final ? '(final)' : ''}</span></option>
+                        {/if}
                     {/each}
                 </select>
 
                 &nbsp;
-                <!--                <span class="reset-text" on:click={resetTest1}>click to reset test</span>-->
+
+                <Button color="secondary" class="btn-sm" on:click={toggleTest1Name}>Change name</Button>
+                <Modal isOpen={openTest1Name} {toggleTest1Name}>
+                    <ModalHeader {toggleTest1Name}>Change name</ModalHeader>
+                    <ModalBody>
+                        <FormGroup>
+                            <Label for="changeTest1Name">Name</Label>
+                            <Input bind:value={test1Name} id="changeTest1Name" placeholder="type name here"/>
+                        </FormGroup>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="primary" on:click={toggleTest1Name}>Change</Button>
+                        <Button color="secondary" on:click={toggleTest1Name}>Cancel</Button>
+                    </ModalFooter>
+                </Modal>
+
             {:catch error}
                 <p style="color: red">{error.message}</p>
             {/await}
+
+            <br>
+            <!-- language 2 -->
+
+            <label for="language2-picker-select"><b>Second language:</b></label>
+            <select name="language2-picker-select" id="language2-picker-select" bind:value={languageName2}
+                    on:change={changeLanguage2}>
+                {#each res.languages as lang}
+                    <option value={lang}>{lang}</option>
+                {/each}
+            </select>
+
+            {#if showSolutionsAndTestsSelector2}
+                {#await solutionsAndTasks2}
+                    <p>Loading Solutions...</p>
+                {:then res}
+                    <label for="solution2-picker-select"><b>Select from solutions:</b></label>
+                    <select name="solution2-picker-select" id="solution2-picker-select"
+                            bind:value={solutionSelector2}
+                            on:change={insertSelectedSolution2IntoEditor}>
+                        {#each Object.entries(solutions2) as [id, info]}
+                            {#if info.exit_code === 0 || !showNotFailedSolutions }
+                                <option value={id} class="{info.exit_code !== 0 ? 'error-msg' : ''}">{info.date}
+                                    <span>{info.exit_code !== 0 ? '(failed)' : ''}</span></option>
+                            {/if}
+                        {/each}
+                    </select>
+
+                    &nbsp;
+
+                    <Button color="secondary" class="btn-sm" on:click={toggleSolution2Name}>Change name
+                    </Button>
+                    <Modal isOpen={openSolution2Name} {toggleSolution2Name}>
+                        <ModalHeader {toggleSolution2Name}>Change name</ModalHeader>
+                        <ModalBody>
+                            <FormGroup>
+                                <Label for="changeSolution2Name">Name</Label>
+                                <Input bind:value={solution2Name} id="changeSolution2Name"
+                                       placeholder="type name here"/>
+                            </FormGroup>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="primary" on:click={toggleSolution2Name}>Change</Button>
+                            <Button color="secondary" on:click={toggleSolution2Name}>Cancel</Button>
+                        </ModalFooter>
+                    </Modal>
+                    &nbsp;
+
+                    <label for="test2-picker-select"><b>Select from test:</b></label>
+                    <select name="test2-picker-select" id="test2-picker-select" bind:value={testSelector2}
+                            on:change={insertSelectedTest2IntoEditor}>
+                        {#each Object.entries(tests2) as [id, info]}
+                            {#if !showFinalTests || info.final}
+                                <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
+                                    <span>{info.final ? '(final)' : ''}</span></option>
+                            {/if}
+                        {/each}
+                    </select>
+
+                    &nbsp;
+
+                    <Button color="secondary" class="btn-sm" on:click={toggleTest2Name}>Change name</Button>
+                    <Modal isOpen={openTest2Name} {toggleTest2Name}>
+                        <ModalHeader {toggleTest2Name}>Change name</ModalHeader>
+                        <ModalBody>
+                            <FormGroup>
+                                <Label for="changeTest2Name">Name</Label>
+                                <Input bind:value={test2Name} id="changeTest2Name" placeholder="type name here"/>
+                            </FormGroup>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="primary" on:click={toggleTest2Name}>Change</Button>
+                            <Button color="secondary" on:click={toggleTest2Name}>Cancel</Button>
+                        </ModalFooter>
+                    </Modal>
+
+                {:catch error}
+                    <p style="color: red">{error.message}</p>
+                {/await}
+            {/if}
         {/if}
-
-        <br>
-
-        <!--        <label for="language2-picker-select"><b>First language:</b></label>-->
-        <!--        <select name="language2-picker-select" id="language2-picker-select" bind:value={languageName2}-->
-        <!--                on:change={changeLanguage2}>-->
-        <!--            {#each res.languages as lang}-->
-        <!--                <option value={lang}>{lang}</option>-->
-        <!--            {/each}-->
-        <!--        </select>-->
-
-        <!--        {#if showSolutionsAndTestsSelector2}-->
-        <!--            {#await solutionsAndTasks2}-->
-        <!--                <p>Loading Solutions...</p>-->
-        <!--            {:then res}-->
-        <!--                <label for="solution2-picker-select"><b>Select from solutions:</b></label>-->
-        <!--                <select name="solution2-picker-select" id="solution2-picker-select" bind:value={solutionSelector2}-->
-        <!--                        on:change={setSolution2}>-->
-        <!--                    {#each Object.entries(solutions2) as [id, info]}-->
-        <!--                        <option value={id} class="{info.exit_code != 0 ? 'error-msg' : ''}">{info.date}-->
-        <!--                            <span>{info.exit_code != 0 ? '(failed)' : ''}</span></option>-->
-        <!--                    {/each}-->
-        <!--                </select>-->
-
-        <!--                &nbsp;-->
-        <!--                <span class="reset-text" on:click={resetSolution2}>click to reset solution</span>-->
-        <!--                &nbsp;-->
-
-        <!--                <label for="test2-picker-select"><b>Select from test:</b></label>-->
-        <!--                <select name="test2-picker-select" id="test2-picker-select" bind:value={testSelector2}-->
-        <!--                        on:change={setTest2}>-->
-        <!--                    <option value=null selected disabled>pick</option>-->
-        <!--                    {#each Object.entries(tests2) as [id, info]}-->
-        <!--                        <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}-->
-        <!--                            <span>{info.final ? '(final)' : ''}</span></option>-->
-        <!--                    {/each}-->
-        <!--                </select>-->
-
-        <!--                &nbsp;-->
-        <!--                <span class="reset-text" on:click={resetTest2}>click to reset test</span>-->
-        <!--            {:catch error}-->
-        <!--                <p style="color: red">{error.message}</p>-->
-        <!--            {/await}-->
-        <!--        {/if}-->
 
     {:catch error}
         <p style="color: red">{error.message}</p>
     {/await}
 </div>
+
+<br>
 
 <!-- editor boxes -->
 
@@ -491,60 +678,44 @@
             <p>
                 {res.text}
             </p>
-            <!--            <div class="box">-->
-            <!--                <p><b>description</b></p>-->
-            <!--                <textarea readonly style="white-space: normal;width: 200px; height: 300px;">{res.text}</textarea>-->
-            <!--            </div>-->
         </div>
     {:catch error}
         <div style="color: red">{error.message}</div>
     {/await}
 
     {#if showSolution1}
-        <!--            <p><b>solution 1</b>&nbsp;<span class="remove-text"-->
-        <!--                                            on:click={() => {showSolution1 = false;numberOfBoxes&#45;&#45;;resizeBoxSize()}}>click to remove</span>-->
-        <!--            </p>-->
         <div class="gutter-col gutter-col-1">
             <div class="vl"></div>
         </div>
-        <div>
-            <div id="solution1"></div>
+        <div bind:clientWidth={widthSolution1}>
+            <div id="solution1" style="width: {widthSolution1*widthConstant}px"></div>
         </div>
     {/if}
 
     {#if showTest1}
-        <!--            <p><b>test 1</b>&nbsp;<span class="remove-text"-->
-        <!--                                        on:click={() => {showTest1 = false;numberOfBoxes&#45;&#45;;resizeBoxSize()}}>click to remove</span>-->
-        <!--            </p>-->
         <div class="gutter-col gutter-col-3">
             <div class="vl"></div>
         </div>
-        <div>
-            <div id="test1"></div>
+        <div bind:clientWidth={widthTest1}>
+            <div id="test1" style="width: {widthTest1*widthConstant}px"></div>
         </div>
     {/if}
 
     {#if showSolution2}
-        <!--            <p><b>solution 2</b>&nbsp;<span class="remove-text"-->
-        <!--                                            on:click={() => {showSolution2 = false;numberOfBoxes&#45;&#45;;resizeBoxSize()}}>click to remove</span>-->
-        <!--            </p>-->
         <div class="gutter-col gutter-col-5">
             <div class="vl"></div>
         </div>
-        <div>
-            <div id="solution2"></div>
+        <div bind:clientWidth={widthSolution2}>
+            <div id="solution2" style="width: {widthSolution2*widthConstant}px"></div>
         </div>
     {/if}
 
     {#if showTest2}
-        <!--            <p><b>test 2</b>&nbsp;<span class="remove-text"-->
-        <!--                                        on:click={() => {showTest2 = false;numberOfBoxes&#45;&#45;;resizeBoxSize()}}>click to remove</span>-->
-        <!--            </p>-->
         <div class="gutter-col gutter-col-7">
             <div class="vl"></div>
         </div>
-        <div>
-            <div id="test2"></div>
+        <div bind:clientWidth={widthTest2}>
+            <div id="test2" style="width: {widthTest2*widthConstant}px"></div>
         </div>
     {/if}
 </div>
@@ -559,18 +730,13 @@
             Run 1. language
         </button>
 
-        <!--        <button type="button" on:click={runTest1AndSaveSolutionHandleClick}>-->
-        <!--            Run and save solution-->
-        <!--        </button>-->
-
-        <!--        <button type="button" on:click={runTest1AndSaveTestHandleClick}>-->
-        <!--            Run and save test-->
-        <!--        </button>-->
-
-        <!--        <button type="button" on:click={runTest1AndSaveBothHandleClick}>-->
-        <!--            Run and save both-->
-        <!--        </button>-->
-
+        <br><br>
+        <!-- info box -->
+        <div class="info-box">
+            {#each infoBoxContent1 as line}
+                {line}<br>
+            {/each}
+        </div>
         <br>
 
         {#if showTest1Result}
@@ -605,55 +771,50 @@
 
 <!-- test results 2 -->
 
-<!--{#if languageName2}-->
-<!--    <div id="test-result-2">-->
-<!--        <button type="button" on:click={runTest2HandleClick}>-->
-<!--            Run 2. language-->
-<!--        </button>-->
+{#if languageName2}
+    <div id="test-result-2">
+        <button type="button" on:click={runTest2HandleClick}>
+            Run 2. language
+        </button>
 
-<!--        <button type="button" on:click={runTest2AndSaveSolutionHandleClick}>-->
-<!--            Run and save solution-->
-<!--        </button>-->
+        <br><br>
+        <!-- info box -->
+        <div class="info-box">
+            {#each infoBoxContent2 as line}
+                {line}<br>
+            {/each}
+        </div>
+        <br>
 
-<!--        <button type="button" on:click={runTest2AndSaveTestHandleClick}>-->
-<!--            Run and save test-->
-<!--        </button>-->
-
-<!--        <button type="button" on:click={runTest2AndSaveBothHandleClick}>-->
-<!--            Run and save both-->
-<!--        </button>-->
-
-<!--        <br>-->
-
-<!--        {#if showTest2Result}-->
-<!--            {#await promiseTest2Result}-->
-<!--                <p>loading...</p>-->
-<!--            {:then res}-->
-<!--                {#if res.solution.exit_code === 1}-->
-<!--                    <p class="error-msg"><b>couldn't compile</b></p>-->
-<!--                    <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>-->
-<!--                {:else}-->
-<!--                    {#if res.solution.exit_code === 2}-->
-<!--                        <p class="error-msg"><b>test failed</b></p>-->
-<!--                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>-->
-<!--                    {:else}-->
-<!--                        <p class="success-msg"><b>test OK</b></p>-->
-<!--                        <p>compilation time: {res.solution.compilation_time} s</p>-->
-<!--                        <p>real time: {res.solution.real_time} s</p>-->
-<!--                        <p>kernel time: {res.solution.kernel_time} s</p>-->
-<!--                        <p>user time: {res.solution.user_time} s</p>-->
-<!--                        <p>max ram usage: {res.solution.max_ram_usage} mb</p>-->
-<!--                        <p>binary size: {res.solution.binary_size} mb</p>-->
-<!--                        <p>test output:</p>-->
-<!--                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>-->
-<!--                    {/if}-->
-<!--                {/if}-->
-<!--            {:catch error}-->
-<!--                <p style="color: red">{error.message}</p>-->
-<!--            {/await}-->
-<!--        {/if}-->
-<!--    </div>-->
-<!--{/if}-->
+        {#if showTest2Result}
+            {#await promiseTest2Result}
+                <p>loading...</p>
+            {:then res}
+                {#if res.solution.exit_code === 1}
+                    <p class="error-msg"><b>couldn't compile</b></p>
+                    <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
+                {:else}
+                    {#if res.solution.exit_code === 2}
+                        <p class="error-msg"><b>test failed</b></p>
+                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
+                    {:else}
+                        <p class="success-msg"><b>test OK</b></p>
+                        <p>compilation time: {res.solution.compilation_time} s</p>
+                        <p>real time: {res.solution.real_time} s</p>
+                        <p>kernel time: {res.solution.kernel_time} s</p>
+                        <p>user time: {res.solution.user_time} s</p>
+                        <p>max ram usage: {res.solution.max_ram_usage} mb</p>
+                        <p>binary size: {res.solution.binary_size} mb</p>
+                        <p>test output:</p>
+                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
+                    {/if}
+                {/if}
+            {:catch error}
+                <p style="color: red">{error.message}</p>
+            {/await}
+        {/if}
+    </div>
+{/if}
 
 <!---------------------------------------- styles ---------------------------------------->
 
@@ -757,4 +918,5 @@
         overflow: auto;
         max-height: 400px !important;
     }
+
 </style>
