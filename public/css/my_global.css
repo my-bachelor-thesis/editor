@@ -1,0 +1,53 @@
+.error {
+    font-weight: bold;
+    color: red;
+}
+
+.msg {
+    font-weight: bold;
+    color: darkgreen;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 1%;
+    text-align: center;
+}
+
+.vl {
+    border-left: 4px solid indianred;
+    height: 500px;
+}
+
+.grid {
+    display: grid;
+}
+
+.gutter-col {
+    grid-row: 1/-1;
+    cursor: col-resize;
+}
+
+.gutter-col-1 {
+    grid-column: 2;
+}
+
+.gutter-col-3 {
+    grid-column: 4;
+}
+
+.gutter-col-5 {
+    grid-column: 6;
+}
+
+.gutter-col-7 {
+    grid-column: 8;
+}
+
+.gutter-col-9 {
+    grid-column: 10;
+}
