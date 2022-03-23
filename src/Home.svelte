@@ -11,11 +11,12 @@
 
     let tasksPromise = helpers.fetchJson(`${url}/home/all-tasks`)
 
-    const message = new URLSearchParams(window.location.search).get('msg')
+    // const message = new URLSearchParams(window.location.search).get('msg')
+    const message = "abc"
 </script>
 
 {#if message}
-    <div class="msg">{message}</div>
+    <div style="font-size: large" class="alert alert-success">{message}</div>
 {/if}
 
 {#await tasksPromise}
@@ -31,10 +32,15 @@
                     <p><b>Description: </b>{task.description}</p>
                     <p><b>Added on: </b>{task.added_on}</p>
                 </Col>
-                <br><hr>
+                <br>
+                <hr>
             </Row>
         {/each}
     </Container>
 {:catch error}
     <div class="error">{error.message}</div>
 {/await}
+
+<style lang="scss">
+  @import "./src/styles/global.scss";
+</style>

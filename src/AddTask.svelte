@@ -1,23 +1,21 @@
 <script>
     import {quill} from 'svelte-quill'
     import {createForm} from "svelte-forms-lib"
-    import Split from "split-grid"
     import Select from 'svelte-select'
     import * as helpers from "./helpers"
-    import * as store from "./store";
-    import {get} from "svelte/store";
+    import * as store from "./store"
+    import {get} from "svelte/store"
+    import {GoEditors, PythonEditors} from "./add_task"
+    import ShowEditors from "./partial_components/add_task/ShowEditors.svelte"
+    import {EditorView} from "@codemirror/view";
 
-    const widthConstant = 0.96
-    let widthSolutionGo = 0, widthTestGo = 0, widthSolutionPython = 0, widthTestPython = 0
-    let solutionGoEditor, testGoEditor, solutionPythonEditor, testPythonEditor
-    let gridStyle = "1fr 10px 1fr"
     const languages = [
-        {value: 'go', label: 'Go'},
-        {value: 'python', label: 'Python'},
+        {value: helpers.languages.Go, label: 'Go'},
+        {value: helpers.languages.Python, label: 'Python'},
     ]
-    // TODO: make map or object from this
-    let isGo = false, isPython = false
     let selectedLanguages = []
+
+    let isGoEditors = false, isPythonEditors = false
 
     let postError = ""
 
@@ -31,7 +29,7 @@
             title: "",
             difficulty: "",
             description: "",
-            is_published: "",
+            is_published: false,
         },
         validate: values => {
             let errs = {}
@@ -47,19 +45,50 @@
             if (selectedLanguages === null || selectedLanguages.length === 0) {
                 errs["languages"] = "select at least one language"
             }
+            if (isGoEditors && GoEditors.finalTest.state.doc.toString() === "") {
+                errs[helpers.languages.Go] = "final test can't be empty"
+            }
+            if (isPythonEditors && PythonEditors.finalTest.state.doc.toString() === "") {
+                errs[helpers.languages.Python] = "final test can't be empty"
+            }
             return errs
         },
         onSubmit: values => {
             values.description = descriptionContent.html
-            if (isGo) {
-                values.go_solution = solutionGoEditor.state.doc.toString()
-                values.go_test = testGoEditor.state.doc.toString()
+            if (isGoEditors) {
+                values.go_final_test = GoEditors.finalTest.state.doc.toString()
+                values.go_solutions = []
+                for (const [_, editor] of GoEditors.solutions) {
+                    let editorContent = editor.state.doc.toString()
+                    if (editorContent) {
+                        values.go_solutions.push(editorContent)
+                    }
+                }
+                values.go_tests = []
+                for (const [_, editor] of GoEditors.tests) {
+                    let editorContent = editor.state.doc.toString()
+                    if (editorContent) {
+                        values.go_tests.push(editorContent)
+                    }
+                }
             }
-            if (isPython) {
-                values.go_solution = solutionPythonEditor.state.doc.toString()
-                values.go_test = testPythonEditor.state.doc.toString()
+            if (isPythonEditors) {
+                values.python_final_test = PythonEditors.finalTest.state.doc.toString()
+                values.python_solutions = []
+                for (const [_, editor] of PythonEditors.solutions) {
+                    let editorContent = editor.state.doc.toString()
+                    if (editorContent) {
+                        values.python_solutions.push(editorContent)
+                    }
+                }
+                values.python_tests = []
+                for (const [_, editor] of PythonEditors.tests) {
+                    let editorContent = editor.state.doc.toString()
+                    if (editorContent) {
+                        values.python_tests.push(editorContent)
+                    }
+                }
             }
-            console.log(values)
             postError = ""
             helpers.postJson(`${get(store.url)}/add-task/form`, JSON.stringify(values)).then(
                 () => {
@@ -67,46 +96,15 @@
                     if (!get(store.isAdmin)) {
                         msg = "the task was submitted for a review"
                     }
+                    console.log(msg)
                     helpers.redirectToHomeWithMessage(msg)
                 }).catch(err => postError = err)
         }
     })
 
     // quill
-    let options = {placeholder: "Write something from outside...",}
+    let options = {placeholder: "Write description here...",}
     let descriptionContent = {html: '', text: ''}
-
-    // add tests and default solutions
-    function loadGoEditors() {
-        (async () => {
-            await helpers.waitForElementWithId("solution-go")
-            solutionGoEditor = helpers.Editor.newGoEditor(document.getElementById("solution-go"))
-            await helpers.waitForElementWithId("test-go")
-            testGoEditor = helpers.Editor.newGoEditor(document.getElementById("test-go"))
-            Split({
-                columnGutters: [{
-                    track: 1,
-                    element: document.querySelector('.gutter-col-1'),
-                }]
-            })
-        })()
-    }
-
-    // add tests and default solutions
-    function loadPythonEditors() {
-        (async () => {
-            await helpers.waitForElementWithId("solution-python")
-            solutionGoEditor = helpers.Editor.newPythonEditor(document.getElementById("solution-python"))
-            await helpers.waitForElementWithId("test-python")
-            testGoEditor = helpers.Editor.newPythonEditor(document.getElementById("test-python"))
-            Split({
-                columnGutters: [{
-                    track: 1,
-                    element: document.querySelector('.gutter-col-1'),
-                }]
-            })
-        })()
-    }
 
     $: if (descriptionContent.text) {
         if ($errors["description"] !== undefined && $errors["description"] !== "" && !isQuillEmpty(descriptionContent)) {
@@ -114,31 +112,65 @@
         }
     }
 
+    // editors
+    function showEditors(editorsClass, language) {
+        switch (language) {
+            case helpers.languages.Go:
+                isGoEditors = true
+                break
+            case helpers.languages.Python:
+                isPythonEditors = true
+        }
+        const id = `${language}-editor-final-test`;
+        (async () => {
+            await helpers.waitForElementWithId(id)
+            let updateExtension = EditorView.updateListener.of((v) => {
+                if (v.docChanged) {
+                    if ($errors[language] !== undefined && $errors[language] !== "" && editorsClass.finalTest.state.doc.toString() !== "") {
+                        $errors[language] = ""
+                    }
+                }
+            })
+            let editor = helpers.Editor.newEditor(language, document.getElementById(id), updateExtension)
+            editorsClass.finalTest = editor
+        })()
+    }
+
+    function showGoEditors() {
+        showEditors(GoEditors, helpers.languages.Go)
+    }
+
+    function showPythonEditors() {
+        showEditors(PythonEditors, helpers.languages.Python)
+    }
+
     function handleLanguageSelect(event) {
         selectedLanguages = event.detail
         if (selectedLanguages === null) {
-            isGo = false
-            isPython = false
+            isGoEditors = false
+            isPythonEditors = false
+            GoEditors.reset()
+            PythonEditors.reset()
         } else {
             selectedLanguages = selectedLanguages.map(x => x.value)
             if ($errors["languages"] !== undefined && $errors["languages"] !== "" && selectedLanguages.length !== 0) {
                 $errors["languages"] = ""
             }
-            if (selectedLanguages.includes("go")) {
-                if (!isGo){
-                    loadGoEditors()
+            if (selectedLanguages.includes(helpers.languages.Go)) {
+                if (!isGoEditors) {
+                    showGoEditors()
                 }
-                isGo = true
             } else {
-                isGo = false
+                isGoEditors = false
+                GoEditors.reset()
             }
-            if (selectedLanguages.includes("python")) {
-                if (!isPython) {
-                    loadPythonEditors()
+            if (selectedLanguages.includes(helpers.languages.Python)) {
+                if (!isPythonEditors) {
+                    showPythonEditors()
                 }
-                isPython = true
             } else {
-                isPython = false
+                isPythonEditors = false
+                PythonEditors.reset()
             }
         }
     }
@@ -156,7 +188,7 @@
 
 <div class="form">
     <form on:submit={handleSubmit}>
-        <label for="title">title</label><br>
+        <h3>title</h3>
         <input bind:value={$form.title} on:change={handleChange} id="title" name="title" type="text"
                placeholder="Title">
         {#if $errors.title}
@@ -164,7 +196,7 @@
         {/if}
 
         <br>
-        <label for="difficulty">select difficulty</label><br>
+        <h3>select difficulty</h3>
         <select id="difficulty" name="difficulty" bind:value={$form.difficulty} on:change={handleChange}>
             <option value="easy">easy</option>
             <option value="medium">medium</option>
@@ -174,75 +206,43 @@
             <div class="error">{$errors.difficulty}</div>
         {/if}
 
-        <br/><br/>
-        <p><b>description</b></p>
+        <br><br>
+        <h3>description (first X characters will be used as a preview for the description)</h3>
         <div class="editor" use:quill={options} on:text-change={e => descriptionContent = e.detail}></div>
         {#if $errors.description}
             <div class="error">{$errors.description}</div>
         {/if}
 
         <br>
-        <h3>Add tests and default solutions</h3>
+        <h3>Select languages</h3>
 
         <Select on:select={handleLanguageSelect} items={languages} isMulti={true}/>
         {#if $errors.languages}
             <div class="error">{$errors.languages}</div>
         {/if}
 
-        {#if isPython}
-            <br>
-            <div class="grid" style="grid-template-columns: {gridStyle}">
-                <div bind:clientWidth={widthSolutionPython}>
-                    <div class="editor-label">Default Python solution</div>
-                    <div id="solution-python" style="width: {widthSolutionPython*widthConstant}px"></div>
-                </div>
-
-                <div class="gutter-col gutter-col-1">
-                    <div class="vl"></div>
-                </div>
-
-                <div bind:clientWidth={widthTestPython}>
-                    <div class="editor-label">Python test</div>
-                    <div id="test-python" style="width: {widthSolutionPython*widthConstant}px"></div>
-                </div>
-            </div>
+        {#if isGoEditors}
+            <ShowEditors lang={helpers.languages.Go} error={$errors.go}/>
         {/if}
 
-        {#if isGo}
-            <br>
-            <div class="grid" style="grid-template-columns: {gridStyle}">
-                <div bind:clientWidth={widthSolutionGo}>
-                    <div class="editor-label">Default Go solution</div>
-                    <div id="solution-go" style="width: {widthSolutionGo*widthConstant}px"></div>
-                </div>
-
-                <div class="gutter-col gutter-col-1">
-                    <div class="vl"></div>
-                </div>
-
-                <div bind:clientWidth={widthTestGo}>
-                    <div class="editor-label">Go test</div>
-                    <div id="test-go" style="width: {widthTestGo*widthConstant}px"></div>
-                </div>
-            </div>
+        {#if isPythonEditors}
+            <ShowEditors lang={helpers.languages.Python} error={$errors.python}/>
         {/if}
 
-        <br/>
+        <br>
         <label for="publish">Publish task</label>
         <input id="publish" name="publish" type=checkbox bind:checked={$form.is_published}>
 
-        <br/><br/>
+        <br><br>
         <button>Submit</button>
     </form>
 </div>
 
-<style>
-    :global(.cm-scroller) {
-        overflow: auto;
-        max-height: 400px !important;
-    }
+<style lang="scss">
+  @import "./src/styles/global.scss";
 
-    .editor-label {
-        text-align: center;
-    }
+  :global(.cm-scroller) {
+    overflow: auto;
+    max-height: 400px !important;
+  }
 </style>

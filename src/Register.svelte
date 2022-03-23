@@ -2,11 +2,8 @@
     import {createForm} from "svelte-forms-lib"
     import * as helpers from "./helpers"
     import * as store from "./store"
-
-    let url = ""
-    store.url.subscribe(val => {
-        url = val
-    })
+    import {get} from "svelte/store"
+    import Form from "./partial_components/forms/Form.svelte"
 
     function validateEmail(email) {
         return String(email)
@@ -20,13 +17,12 @@
         helpers.isValidUsername(username).then(res => {
             $errors.username = ""
             if (res) {
-                $errors.username = "username is not unique"
+                $errors.username = "username already exists"
             }
         })
     }
 
     let postError = ""
-    let password = ""
 
     const {form, errors, state, handleChange, handleSubmit} = createForm({
         initialValues: {
@@ -58,23 +54,22 @@
             if (values.password === "") {
                 errs["password"] = "password can't be empty"
             }
-            if (values.repeated_password !== password) {
+            if ($form.password !== $form.repeated_password) {
                 errs["repeated_password"] = "passwords don't match"
             }
             return errs
         },
         onSubmit: values => {
             postError = ""
-            helpers.postJson(`${url}/register/form`, JSON.stringify(values)).then(
+            helpers.postJson(`${get(store.url)}/register/form`, JSON.stringify(values)).then(
                 () => helpers.redirectToHomeWithMessage("account registered")).catch((err) => postError = err
             )
         }
     })
 
-    $: if ($form.password) {
-        password = $form.password
+    $: if ($form.password === $form.repeated_password) {
+        $errors.repeated_password = ""
     }
-
 </script>
 
 <h1>Register</h1>
@@ -83,53 +78,58 @@
     <div class="error">{postError}</div>
 {/if}
 
-<div class="form">
+<Form submitFunc={handleSubmit} handleFunc={handleChange} args={[
+        {
+            label: "first name",
+            error: $errors.first_name,
+            value: $form.first_name,
+            type: "text",
+        },
+        {
+            label: "last name",
+            error: $errors.last_name,
+            value: $form.last_name,
+            type: "text",
+        },
+        {
+            label: "username",
+            error: $errors.username,
+            value: $form.username,
+            type: "text",
+        },
+        {
+            label: "email",
+            error: $errors.email,
+            value: $form.email,
+            type: "text",
+        },
+        {
+            label: "email",
+            error: $errors.email,
+            value: $form.email,
+            type: "text",
+        },
+    ]}/>
 
-    <form on:submit={handleSubmit}>
-        <label for="first_name">first name</label><br>
-        <input bind:value={$form.first_name} on:change={handleChange} id="first_name" name="first_name" type="text"
-               placeholder="first name">
-        {#if $errors.first_name}
-            <div class="error">{$errors.first_name}</div>
-        {/if}<br>
+<!--<div class="form">-->
+<!--    <form on:submit={handleSubmit}>-->
+<!--        <FormField label="first name" error={$errors.first_name} value={$form.first_name} type={"text"} handleFunc={handleChange}/>-->
 
-        <label for="last_name">last name</label><br>
-        <input bind:value={$form.last_name} on:change={handleChange} id="last_name" name="last_name" type="text"
-               placeholder="last name">
-        {#if $errors.last_name}
-            <div class="error">{$errors.last_name}</div>
-        {/if}<br>
+<!--        <FormField label="last name" error={$errors.last_name} value={$form.last_name} type={"text"} handleFunc={handleChange}/>-->
 
-        <label for="username">username</label><br>
-        <input bind:value={$form.username} on:change={handleChange} id="username" name="username" type="text"
-               placeholder="username">
-        {#if $errors.username}
-            <div class="error">{$errors.username}</div>
-        {/if}<br>
+<!--        <FormField label="username" error={$errors.username} value={$form.username} type={"text"} handleFunc={handleChange}/>-->
 
-        <label for="email">email</label><br>
-        <input bind:value={$form.email} on:change={handleChange} id="email" name="email" type="text"
-               placeholder="email">
-        {#if $errors.email}
-            <div class="error">{$errors.email}</div>
-        {/if}<br>
+<!--        <FormField label="email" error={$errors.email} value={$form.email} type={"text"} handleFunc={handleChange}/>-->
 
-        <label for="password">password</label><br>
-        <input bind:value={$form.password} on:change={handleChange} id="password" name="password" type="password"
-               placeholder="password">
-        {#if $errors.password}
-            <div class="error">{$errors.password}</div>
-        {/if}<br>
+<!--        <FormField label="password" error={$errors.password} value={$form.password} type={"password"} handleFunc={handleChange}/>-->
 
-        <label for="repeated_password">repeat password</label><br>
-        <input bind:value={$form.repeated_password} on:change={handleChange} id="repeated_password"
-               name="repeated_password" type="password"
-               placeholder="repeat password">
-        {#if $errors.repeated_password}
-            <div class="error">{$errors.repeated_password}</div>
-        {/if}<br>
+<!--        <FormField label="repeated password" error={$errors.repeated_password} value={$form.repeated_password} type={"password"} handleFunc={handleChange}/>-->
 
-        <br>
-        <button>Submit</button>
-    </form>
-</div>
+<!--        <br>-->
+<!--        <button>Submit</button>-->
+<!--    </form>-->
+<!--</div>-->
+
+<style lang="scss">
+  @import "./src/styles/global.scss";
+</style>

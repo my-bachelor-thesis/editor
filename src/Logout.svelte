@@ -3,5 +3,5 @@
 
     document.cookie = "auth="
     helpers.setStorage()
-    helpers.redirectToHomeWithMessage()
+    helpers.redirectToHomeWithMessage("logged out")
 </script>

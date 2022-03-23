@@ -2,6 +2,7 @@
     import {createForm} from "svelte-forms-lib"
     import * as helpers from "./helpers"
     import * as store from "./store"
+    import FormField from "./partial_components/forms/InputField.svelte"
 
     let url = ""
     store.url.subscribe(val => {
@@ -51,35 +52,26 @@
 
 <div id="login-form">
     <form on:submit={handleSubmit}>
-        <label for="username">username</label><br>
-        <input bind:value={$form.username} on:change={handleChange} id="username" name="username" type="text"
-               placeholder="username">
-        {#if $errors.username}
-            <div class="error">{$errors.username}</div>
-        {/if}<br>
+        <FormField label="username" error={$errors.username} value={$form.username} type={"text"} handleFunc={handleChange}/>
 
-        <label for="password">password</label><br>
-        <input bind:value={$form.password} on:change={handleChange} id="password" name="password" type="password"
-               placeholder="password">
-        {#if $errors.password}
-            <div class="error">{$errors.password}</div>
-        {/if}<br>
-
+        <FormField label="password" error={$errors.password} value={$form.password} type={"password"} handleFunc={handleChange}/>
         <br>
         <button>Submit</button>
     </form>
 </div>
 
-<style>
-    #login-form {
-        margin: 2%;
-    }
+<style lang="scss">
+  @import "./src/styles/global.scss";
 
-    #login-form label {
-        font-weight: bold;
-    }
+  #login-form {
+    margin: 2%;
+  }
 
-    #login-form input {
-        margin-bottom: 0.5%;
-    }
+  #login-form label {
+    font-weight: bold !important;
+  }
+
+  #login-form input {
+    margin-bottom: 0.5%;
+  }
 </style>

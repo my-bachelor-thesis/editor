@@ -103,20 +103,50 @@ export class Editor {
         }
     }
 
-    static #newEditor(language, element) {
+    static #newEditor(language, element, ...additionalExtensions) {
         return new EditorView({
             state: EditorState.create({
-                extensions: [basicSetup, keymap.of([indentWithTab]), this.#languageToCodemirrorFunction(language)],
+                extensions: [
+                    basicSetup,
+                    keymap.of([indentWithTab]),
+                    ...additionalExtensions
+                ],
             }),
             parent: element,
         })
     }
 
-    static newGoEditor(element) {
-        return this.#newEditor("go", element)
+    static newGoEditor(element, ...additionalExtensions) {
+        return this.#newEditor("go", element, ...additionalExtensions)
     }
 
-    static newPythonEditor(elementId) {
-        return this.#newEditor("python", elementId)
+    static newPythonEditor(element, ...additionalExtensions) {
+        return this.#newEditor("python", element, ...additionalExtensions)
+    }
+
+    static newEditor(language, element, ...additionalExtensions) {
+        switch (language) {
+            case 'go':
+                return this.newGoEditor(element, ...additionalExtensions)
+            case 'python':
+                return this.newPythonEditor(element, ...additionalExtensions)
+        }
+    }
+}
+
+export const languages = {
+    Go: "go",
+    Python: "python",
+    Cpp: "cpp"
+}
+
+export function languageName(lang) {
+    switch (lang) {
+        case "go":
+            return "Go"
+        case "python":
+            return "Python"
+        case "cpp":
+            return "C++"
     }
 }
