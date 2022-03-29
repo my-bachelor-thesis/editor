@@ -17,7 +17,7 @@
     } from 'sveltestrap';
     import * as store from "./store"
     import * as helpers from "./helpers"
-    import NotPublished from "./NotPublished.svelte"
+    import NotPublished from "./Publish.svelte"
     import Approve from "./Approve.svelte"
 
     helpers.setStorage()
@@ -36,12 +36,6 @@
         isAdmin = val
     })
 </script>
-
-<svelte:head>
-    <title>My bachelor thesis</title>
-    <html lang="en"></html>
-    <link rel="stylesheet" href="/css/bootstrap.min.5.1.3.css">
-</svelte:head>
 
 <Router>
     <Navbar color="light" light expand="md">
@@ -148,6 +142,6 @@
 
 <!--<footer>Ján Kelemen 2022</footer>-->
 
-<style lang="scss">
-  @import "./src/styles/global.scss";
-</style>
+<!--<style lang="scss" global>-->
+<!--    @import "./src/styles/global.scss";-->
+<!--</style>-->

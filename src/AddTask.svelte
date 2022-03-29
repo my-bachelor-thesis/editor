@@ -8,6 +8,7 @@
     import {GoEditors, PythonEditors} from "./add_task"
     import ShowEditors from "./partial_components/add_task/ShowEditors.svelte"
     import {EditorView} from "@codemirror/view";
+    import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
     const languages = [
         {value: helpers.languages.Go, label: 'Go'},
@@ -29,7 +30,6 @@
             title: "",
             difficulty: "",
             description: "",
-            is_published: false,
         },
         validate: values => {
             let errs = {}
@@ -55,38 +55,39 @@
         },
         onSubmit: values => {
             values.description = descriptionContent.html
-            if (isGoEditors) {
-                values.go_final_test = GoEditors.finalTest.state.doc.toString()
-                values.go_solutions = []
-                for (const [_, editor] of GoEditors.solutions) {
+
+            let transformToList = function (language, type, arr) {
+                let res = []
+                for (const [id, editor] of arr) {
                     let editorContent = editor.state.doc.toString()
                     if (editorContent) {
-                        values.go_solutions.push(editorContent)
+                        let name = document.getElementById(`name-of-${language}-${type}-${id}`).value
+                        res.push({name: name, code: editorContent})
                     }
                 }
-                values.go_tests = []
-                for (const [_, editor] of GoEditors.tests) {
-                    let editorContent = editor.state.doc.toString()
-                    if (editorContent) {
-                        values.go_tests.push(editorContent)
-                    }
+                return res
+            }
+
+            if (isGoEditors) {
+                values.go_final_test = GoEditors.finalTest.state.doc.toString()
+                let solutions = transformToList(helpers.languages.Go, "solution", GoEditors.solutions)
+                if (solutions.length > 0) {
+                    values.go_solutions = solutions
+                }
+                let tests = transformToList(helpers.languages.Go, "test", GoEditors.tests)
+                if (tests.length > 0) {
+                    values.go_tests = tests
                 }
             }
             if (isPythonEditors) {
                 values.python_final_test = PythonEditors.finalTest.state.doc.toString()
-                values.python_solutions = []
-                for (const [_, editor] of PythonEditors.solutions) {
-                    let editorContent = editor.state.doc.toString()
-                    if (editorContent) {
-                        values.python_solutions.push(editorContent)
-                    }
+                let solutions = transformToList(helpers.languages.Python, "solution", PythonEditors.solutions)
+                if (solutions.length > 0) {
+                    values.python_solutions = solutions
                 }
-                values.python_tests = []
-                for (const [_, editor] of PythonEditors.tests) {
-                    let editorContent = editor.state.doc.toString()
-                    if (editorContent) {
-                        values.python_tests.push(editorContent)
-                    }
+                let tests = transformToList(helpers.languages.Python, "test", PythonEditors.tests)
+                if (tests.length > 0) {
+                    values.python_tests = tests
                 }
             }
             postError = ""
@@ -180,11 +181,9 @@
     <link href="/css/quill.snow.css" rel="stylesheet">
 </svelte:head>
 
-<h1>Add a task</h1>
+<h1 class="title">Add a task</h1>
 
-{#if postError}
-    <div class="error">{postError}</div>
-{/if}
+<ErrorMessage msg={postError}/>
 
 <div class="form">
     <form on:submit={handleSubmit}>
@@ -228,10 +227,6 @@
         {#if isPythonEditors}
             <ShowEditors lang={helpers.languages.Python} error={$errors.python}/>
         {/if}
-
-        <br>
-        <label for="publish">Publish task</label>
-        <input id="publish" name="publish" type=checkbox bind:checked={$form.is_published}>
 
         <br><br>
         <button>Submit</button>

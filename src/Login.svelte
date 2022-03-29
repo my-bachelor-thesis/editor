@@ -2,12 +2,9 @@
     import {createForm} from "svelte-forms-lib"
     import * as helpers from "./helpers"
     import * as store from "./store"
-    import FormField from "./partial_components/forms/InputField.svelte"
-
-    let url = ""
-    store.url.subscribe(val => {
-        url = val
-    })
+    import {get} from "svelte/store";
+    import Form from "./partial_components/forms/Form.svelte";
+    import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
     let postError = ""
 
@@ -21,8 +18,8 @@
             if (values.username === "") {
                 errs["username"] = "username can't be empty"
             } else if (values.username !== undefined) {
-                helpers.isValidUsername(values.username).then(res => {
-                    if (!res) {
+                helpers.isValidUsername(values.username).then(isValid => {
+                    if (!isValid) {
                         $errors.username = "incorrect username"
                     }
                 })
@@ -34,44 +31,35 @@
         },
         onSubmit: values => {
             postError = ""
-            helpers.postJson(`${url}/login/form`, JSON.stringify(values)).then(
+            helpers.postJson(`${get(store.url)}/login/form`, JSON.stringify(values)).then(
                 () => {
                     helpers.setStorage()
-                    helpers.redirectToHomeWithMessage()
+                    helpers.redirectToHomeWithMessage("logged in")
                 }).catch(err => postError = err)
         }
     })
 
 </script>
 
-<h1>Login</h1>
+<h1 class="title">Login</h1>
 
-{#if postError}
-    <div class="error">{postError}</div>
-{/if}
+<ErrorMessage msg={postError}/>
 
-<div id="login-form">
-    <form on:submit={handleSubmit}>
-        <FormField label="username" error={$errors.username} value={$form.username} type={"text"} handleFunc={handleChange}/>
-
-        <FormField label="password" error={$errors.password} value={$form.password} type={"password"} handleFunc={handleChange}/>
-        <br>
-        <button>Submit</button>
-    </form>
-</div>
+<Form submitFunc={handleSubmit} handleFunc={handleChange} args={[
+        {
+            label: "username",
+            error: $errors.username,
+            value: $form.username,
+            type: "text",
+        },
+        {
+            label: "password",
+            error: $errors.password,
+            value: $form.password,
+            type: "password",
+        },
+    ]}/>
 
 <style lang="scss">
   @import "./src/styles/global.scss";
-
-  #login-form {
-    margin: 2%;
-  }
-
-  #login-form label {
-    font-weight: bold !important;
-  }
-
-  #login-form input {
-    margin-bottom: 0.5%;
-  }
 </style>

@@ -1,8 +1,10 @@
 <script>
-
+    export let msg, cssClass
 </script>
 
-<h1>Not published</h1>
+{#if msg}
+    <div class="{cssClass}">{msg}</div>
+{/if}
 
 <style lang="scss">
   @import "./src/styles/global.scss";

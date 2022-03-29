@@ -4,6 +4,7 @@
     import * as store from "./store"
     import {get} from "svelte/store"
     import Form from "./partial_components/forms/Form.svelte"
+    import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
     function validateEmail(email) {
         return String(email)
@@ -72,11 +73,9 @@
     }
 </script>
 
-<h1>Register</h1>
+<h1 class="title">Register</h1>
 
-{#if postError}
-    <div class="error">{postError}</div>
-{/if}
+<ErrorMessage msg={postError}/>
 
 <Form submitFunc={handleSubmit} handleFunc={handleChange} args={[
         {
@@ -104,31 +103,18 @@
             type: "text",
         },
         {
-            label: "email",
-            error: $errors.email,
-            value: $form.email,
-            type: "text",
+            label: "password",
+            error: $errors.password,
+            value: $form.password,
+            type: "password",
+        },
+        {
+            label: "repeated password",
+            error: $errors.repeated_password,
+            value: $form.repeated_password,
+            type: "password",
         },
     ]}/>
-
-<!--<div class="form">-->
-<!--    <form on:submit={handleSubmit}>-->
-<!--        <FormField label="first name" error={$errors.first_name} value={$form.first_name} type={"text"} handleFunc={handleChange}/>-->
-
-<!--        <FormField label="last name" error={$errors.last_name} value={$form.last_name} type={"text"} handleFunc={handleChange}/>-->
-
-<!--        <FormField label="username" error={$errors.username} value={$form.username} type={"text"} handleFunc={handleChange}/>-->
-
-<!--        <FormField label="email" error={$errors.email} value={$form.email} type={"text"} handleFunc={handleChange}/>-->
-
-<!--        <FormField label="password" error={$errors.password} value={$form.password} type={"password"} handleFunc={handleChange}/>-->
-
-<!--        <FormField label="repeated password" error={$errors.repeated_password} value={$form.repeated_password} type={"password"} handleFunc={handleChange}/>-->
-
-<!--        <br>-->
-<!--        <button>Submit</button>-->
-<!--    </form>-->
-<!--</div>-->
 
 <style lang="scss">
   @import "./src/styles/global.scss";

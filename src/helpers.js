@@ -32,11 +32,8 @@ export async function postJson(url, content) {
         body: content
     })
 
-    let data = await res.json()
-
-    if (res.ok) {
-        return data
-    } else {
+    if (!res.ok) {
+        let data = await res.json()
         if (res.status === 500) {
             data = "internal server error"
         }
@@ -109,6 +106,7 @@ export class Editor {
                 extensions: [
                     basicSetup,
                     keymap.of([indentWithTab]),
+                    this.#languageToCodemirrorFunction(language),
                     ...additionalExtensions
                 ],
             }),

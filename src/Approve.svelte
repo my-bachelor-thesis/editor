@@ -1,9 +1,11 @@
 <script>
-
+    import PublishApprove from "./partial_components/publish_approve/PublishApprove.svelte";
 </script>
 
-<h1>approve</h1>
-
-<style lang="scss">
-  @import "./src/styles/global.scss";
-</style>
+<PublishApprove
+        title="Not approved"
+        buttonText="Approve"
+        getTasksFromUrl="/not-approved/all"
+        postTasksToUrl="/not-approved/approve"
+        successMsg="approved successfully"
+/>
