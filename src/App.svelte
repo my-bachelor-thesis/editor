@@ -141,7 +141,3 @@
 </Router>
 
 <!--<footer>Ján Kelemen 2022</footer>-->
-
-<!--<style lang="scss" global>-->
-<!--    @import "./src/styles/global.scss";-->
-<!--</style>-->

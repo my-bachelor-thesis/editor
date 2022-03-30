@@ -48,7 +48,3 @@
         <div class="not-found-err">No tasks found</div>
     {/if}
 {/await}
-
-<style lang="scss">
-  @import "./src/styles/global.scss";
-</style>

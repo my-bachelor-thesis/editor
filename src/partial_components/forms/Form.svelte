@@ -14,7 +14,3 @@
         <button>Submit</button>
     </form>
 </div>
-
-<style lang="scss">
-  @import "./src/styles/global.scss";
-</style>

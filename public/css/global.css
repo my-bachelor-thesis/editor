@@ -61,3 +61,63 @@ button:not(:disabled):active {
 button:focus {
     border-color: #666;
 }
+
+/*///////////////////////////////////////////////*/
+
+.form {
+    margin: 2%;
+}
+
+.label-form {
+    font-weight: bold;
+}
+
+.input-form {
+    margin-bottom: 1%;
+}
+
+.error {
+    font-weight: bold;
+    color: red;
+}
+
+.msg-font, .error-font {
+    font-size: large;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 1%;
+    text-align: center;
+}
+
+.title {
+    margin: 2%;
+}
+
+.easy {
+    color: green;
+}
+
+.medium {
+    color: orange;
+}
+
+.hard {
+    color: red;
+}
+
+.task-fields div {
+    margin-bottom: 1%;
+}
+
+.not-found-err {
+    font-weight: bold;
+    font-size: x-large;
+    margin: 3%;
+    text-align: center;
+}

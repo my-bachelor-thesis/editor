@@ -233,9 +233,7 @@
     </form>
 </div>
 
-<style lang="scss">
-  @import "./src/styles/global.scss";
-
+<style>
   :global(.cm-scroller) {
     overflow: auto;
     max-height: 400px !important;

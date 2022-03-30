@@ -16,7 +16,3 @@
 {#if error}
     <div class="error">{error}</div>
 {/if}<br>
-
-<style lang="scss">
-  @import "./src/styles/global.scss";
-</style>

@@ -25,12 +25,10 @@
     "@codemirror/stream-parser": "^0.19.6",
     "@codemirror/view": "^0.19.45",
     "@smui/chips": "^6.0.0-beta.14",
-    "node-sass": "^7.0.1",
     "sirv-cli": "^2.0.2",
     "split-grid": "^1.0.11",
     "svelte-forms-lib": "^2.0.1",
     "svelte-navigator": "^3.1.5",
-    "svelte-preprocess": "^4.10.4",
     "svelte-quill": "^1.2.0",
     "svelte-select": "^4.4.7",
     "sveltestrap": "^5.9.0"

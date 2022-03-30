@@ -85,7 +85,3 @@
     <button on:click={addSolutionFunc} type="button">Add public solution</button>
     <button on:click={addTestFunc} type="button">Add public test</button>
 </div>
-
-<style lang="scss">
-  @import "./src/styles/global.scss";
-</style>

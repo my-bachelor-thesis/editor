@@ -42,14 +42,7 @@ export default {
             compilerOptions: {
                 // enable run-time checks when not in production
                 dev: !production
-            },
-            // preprocess: sveltePreprocess({
-            //     sourceMap: !production,
-            //     scss: {
-            //         prependData: `@import 'src/styles/global.scss';`
-            //     }
-            // }),
-            preprocess: sveltePreprocess(),
+            }
         }),
         // we'll extract any component CSS out into
         // a separate file - better for performance
