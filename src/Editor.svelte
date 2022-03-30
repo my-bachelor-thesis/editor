@@ -8,14 +8,11 @@
     import {python} from "@codemirror/lang-python"
     import {Button, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader,} from 'sveltestrap'
     import * as store from "./store"
-
-    // url from store
-    let url = ""
-    store.url.subscribe(val => {
-        url = val
-    })
+    import {get} from "svelte/store";
 
     // variables //
+
+    let url = get(store.url)
 
     let openSolution1Name = false, openTest1Name = false, openSolution2Name = false, openTest2Name = false
     const toggleSolution1Name = () => (openSolution1Name = !openSolution1Name)
