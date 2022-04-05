@@ -233,9 +233,9 @@
     </form>
 </div>
 
-<style>
-  :global(.cm-scroller) {
-    overflow: auto;
-    max-height: 400px !important;
-  }
-</style>
+<!--<style>-->
+<!--  :global(.cm-scroller) {-->
+<!--    overflow: auto;-->
+<!--    max-height: 400px !important;-->
+<!--  }-->
+<!--</style>-->

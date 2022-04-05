@@ -29,4 +29,6 @@
     {:else}
         <div class="not-found-err">No tasks found</div>
     {/if}
+{:catch error}
+    <p style="color: red">{error.message}</p>
 {/await}

@@ -81,6 +81,14 @@ button:focus {
     color: red;
 }
 
+.error-msg {
+    color: red;
+}
+
+.success-msg {
+    color: green;
+}
+
 .msg-font, .error-font {
     font-size: large;
 }

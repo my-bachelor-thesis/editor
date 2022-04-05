@@ -6,20 +6,23 @@
     import {go} from "@codemirror/legacy-modes/mode/go"
     import {StreamLanguage} from "@codemirror/stream-parser"
     import {python} from "@codemirror/lang-python"
-    import {Button, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader,} from 'sveltestrap'
     import * as store from "./store"
     import {get} from "svelte/store";
+    import RunLanguagePanel from "./partial_components/editor/RunLanguagePanel.svelte";
+    import CodeEditors from "./partial_components/editor/CodeEditors.svelte";
+    import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte";
+    import SolutionsAndTestsSelector from "./partial_components/editor/SolutionsAndTestsSelector.svelte";
+    import {GridStyleStore} from "./partial_components/editor/code_editors";
 
     // variables //
 
     let url = get(store.url)
 
-    let openSolution1Name = false, openTest1Name = false, openSolution2Name = false, openTest2Name = false
-    const toggleSolution1Name = () => (openSolution1Name = !openSolution1Name)
+    let openTest1Name = false, openSolution2Name = false, openTest2Name = false
     const toggleTest1Name = () => (openTest1Name = !openTest1Name)
     const toggleSolution2Name = () => (openSolution2Name = !openSolution2Name)
     const toggleTest2Name = () => (openTest2Name = !openTest2Name)
-    let solution1Name = "", test1Name = "", solution2Name = "", test2Name = ""
+    let test1Name = "", solution2Name = "", test2Name = ""
 
     const taskId = new URLSearchParams(window.location.search).get('id')
     const initValues = getInitValues()
@@ -35,28 +38,21 @@
 
     let showTest1 = false, showTest2 = false, showSolution1 = false, showSolution2 = false
 
-    let gridStyle = ""
-    let numberOfEditors = 0
-    $: if (numberOfEditors) {
-        gridStyle = "1fr " + "10px 1fr ".repeat(Math.max(0, numberOfEditors - 1))
-    }
-
     let showSolutionsAndTestsSelector1 = false, showSolutionsAndTestsSelector2 = false
     let solutionSelector1 = 0, solutionSelector2 = 0, testSelector1 = 0, testSelector2 = 0
-    let solutionsAndTasks1 = Promise.resolve([]), solutionsAndTasks2 = Promise.resolve([])
+    let solutionsAndTasksPromise1 = Promise.resolve([]), solutionsAndTasksPromise2 = Promise.resolve([])
 
     let showTest1Result = false, showTest2Result = false
     let promiseTest1Result = Promise.resolve([]), promiseTest2Result = Promise.resolve([])
 
     let tests1 = new Map(), tests2 = new Map(), solutions1 = new Map(), solutions2 = new Map()
 
-    let widthSolution1 = 0, widthTest1 = 0, widthSolution2 = 0, widthTest2 = 0
-    const widthConstant = 0.96
-
     let infoBoxContent1 = []
     let infoBoxContent2 = []
 
     let testResultsCache = new Map()
+
+    let editorHeight = Math.floor(window.innerHeight / 1.5) + "px"
 
     // helper functions //
 
@@ -105,10 +101,12 @@
 
     function changeLanguage1() {
         infoBoxContent1 = []
-        numberOfEditors++
+        if (GridStyleStore.isEmpty()) {
+            GridStyleStore.addBoxes(1)
+        }
         if (!showSolution1) {
-            showSolution1 = true
-            numberOfEditors++
+            showSolution1 = true;
+            GridStyleStore.addBoxes(1);
             (async () => {
                 await waitForElement("solution1")
                 solution1Editor = new EditorView({
@@ -116,12 +114,13 @@
                         extensions: [basicSetup, keymap.of([indentWithTab]), languageToCodemirrorFunction(languageName1)],
                     }),
                     parent: document.getElementById("solution1"),
+                    contentHeight: 100,
                 });
             })()
         }
         if (!showTest1) {
-            showTest1 = true
-            numberOfEditors++
+            showTest1 = true;
+            GridStyleStore.addBoxes(1);
             (async () => {
                 await waitForElement("test1")
                 test1Editor = new EditorView({
@@ -146,8 +145,8 @@
             })
         })()
         showSolutionsAndTestsSelector1 = true
-        solutionsAndTasks1 = fetchSolutionsAndTasks(languageName1)
-        solutionsAndTasks1.then((data) => {
+        solutionsAndTasksPromise1 = fetchSolutionsAndTasks(languageName1)
+        solutionsAndTasksPromise1.then((data) => {
             solutions1 = data.solutions
             tests1 = data.tests
         })
@@ -156,8 +155,8 @@
     function changeLanguage2() {
         infoBoxContent2 = []
         if (!showSolution2) {
-            showSolution2 = true
-            numberOfEditors++
+            showSolution2 = true;
+            GridStyleStore.addBoxes(1);
             (async () => {
                 await waitForElement("solution2")
                 solution2Editor = new EditorView({
@@ -169,8 +168,8 @@
             })()
         }
         if (!showTest2) {
-            showTest2 = true
-            numberOfEditors++
+            showTest2 = true;
+            GridStyleStore.addBoxes(1);
             (async () => {
                 await waitForElement("test2")
                 test2Editor = new EditorView({
@@ -195,8 +194,8 @@
             })
         })()
         showSolutionsAndTestsSelector2 = true
-        solutionsAndTasks2 = fetchSolutionsAndTasks(languageName2)
-        solutionsAndTasks2.then((data) => {
+        solutionsAndTasksPromise2 = fetchSolutionsAndTasks(languageName2)
+        solutionsAndTasksPromise2.then((data) => {
             solutions2 = data.solutions
             tests2 = data.tests
         })
@@ -460,6 +459,17 @@
         }
     }
 
+    function hideLanguage(languageNumber) {
+        // showSolutionsAndTestsSelector${languageNumber} = false
+        showSolutionsAndTestsSelector1 = false
+        // eval(`languageName${languageNumber} = ""`)
+        languageName1 = ""
+        GridStyleStore.removeBoxes(2)
+        // eval(`showSolution${languageNumber} = false`)
+        // eval(`showTest${languageNumber} = false`)
+        showSolution1 = false
+        showTest1 = false
+    }
 </script>
 
 <!---------------------------------------- html starts here ---------------------------------------->
@@ -469,17 +479,19 @@
 <div class="title">
     {#await initValues}
         <p>Loading title...</p>
-    {:then res}
-        <h1>{res.title} ({res.difficulty})</h1>
-        <p><b>Added on:</b> {res.added_on}</p>
-        <p><b>Author:</b> {res.author}</p>
-        <p><b>Approver:</b> {res.approver}</p>
+    {:then task}
+        <h1>{task.title}</h1><br>
+        <p><b>Difficulty: </b><span class="{task.difficulty}">{task.difficulty}</span></p>
+        <p><b>Added on:</b> {task.added_on}</p>
+        <p><b>Author:</b> {task.author}</p>
+        <p><b>Approver:</b> {task.approver}</p>
     {:catch error}
         <p style="color: red">{error.message}</p>
     {/await}
 </div>
 
 <br>
+<hr>
 
 <fieldset>
     <legend>Choose filters</legend>
@@ -505,159 +517,58 @@
     {:then res}
 
         <!-- language 1 -->
+        <hr>
 
-        <label for="language1-picker-select"><b>First language:</b></label>
-        <select name="language1-picker-select" id="language1-picker-select" bind:value={languageName1}
-                on:change={changeLanguage1}>
-            {#each res.languages as lang}
-                <option value={lang}>{lang}</option>
-            {/each}
-        </select>
+        <LanguageSelector
+                changeLanguageFunc={changeLanguage1}
+                bind:languageName={languageName1}
+                languageNumber="1"
+                initValues={res}
+                hideLanguageFunc={hideLanguage}
+        />
 
-        &nbsp;
+        <br>
+
         {#if showSolutionsAndTestsSelector1}
-            {#await solutionsAndTasks1}
-                <p>Loading Solutions...</p>
-            {:then res}
-                <label for="solution1-picker-select"><b>Select from solutions:</b></label>
-                <select name="solution1-picker-select" id="solution1-picker-select" bind:value={solutionSelector1}
-                        on:change={insertSelectedSolution1IntoEditor}>
-                    {#each Object.entries(solutions1) as [id, info]}
-                        {#if info.exit_code === 0 || !showNotFailedSolutions }
-                            <option value={id} class="{info.exit_code !== 0 ? 'error-msg' : ''}">{info.date}
-                                <span>{info.exit_code !== 0 ? '(failed)' : ''}</span></option>
-                        {/if}
-                    {/each}
-                </select>
 
-                &nbsp;
+            <SolutionsAndTestsSelector
+                    solutionsAndTasksPromise={solutionsAndTasksPromise1}
+                    bind:solutionSelector={solutionSelector1}
+                    bind:testSelector={testSelector1}
+                    insertSelectedSolutionIntoEditor={insertSelectedSolution1IntoEditor}
+                    insertSelectedTestIntoEditor={insertSelectedTest1IntoEditor}
+                    solutions={solutions1}
+                    tests={tests1}
+                    languageNumber="1"
+                    showNotFailedSolutions={showNotFailedSolutions}
+                    showFinalTests={showFinalTests}
+            />
 
-                <Button color="secondary" class="btn-sm" on:click={toggleSolution1Name}>Change name</Button>
-                <Modal isOpen={openSolution1Name} {toggleSolution1Name}>
-                    <ModalHeader {toggleSolution1Name}>Change name</ModalHeader>
-                    <ModalBody>
-                        <FormGroup>
-                            <Label for="changeSolution1Name">Name</Label>
-                            <Input bind:value={solution1Name} id="changeSolution1Name" placeholder="type name here"/>
-                        </FormGroup>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="primary" on:click={toggleSolution1Name}>Change</Button>
-                        <Button color="secondary" on:click={toggleSolution1Name}>Cancel</Button>
-                    </ModalFooter>
-                </Modal>
-                &nbsp;
-
-                <label for="test1-picker-select"><b>Select from test:</b></label>
-                <select name="test1-picker-select" id="test1-picker-select" bind:value={testSelector1}
-                        on:change={insertSelectedTest1IntoEditor}>
-                    {#each Object.entries(tests1) as [id, info]}
-                        {#if !showFinalTests || info.final}
-                            <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
-                                <span>{info.final ? '(final)' : ''}</span></option>
-                        {/if}
-                    {/each}
-                </select>
-
-                &nbsp;
-
-                <Button color="secondary" class="btn-sm" on:click={toggleTest1Name}>Change name</Button>
-                <Modal isOpen={openTest1Name} {toggleTest1Name}>
-                    <ModalHeader {toggleTest1Name}>Change name</ModalHeader>
-                    <ModalBody>
-                        <FormGroup>
-                            <Label for="changeTest1Name">Name</Label>
-                            <Input bind:value={test1Name} id="changeTest1Name" placeholder="type name here"/>
-                        </FormGroup>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="primary" on:click={toggleTest1Name}>Change</Button>
-                        <Button color="secondary" on:click={toggleTest1Name}>Cancel</Button>
-                    </ModalFooter>
-                </Modal>
-
-            {:catch error}
-                <p style="color: red">{error.message}</p>
-            {/await}
-
-            <br>
             <!-- language 2 -->
 
-            <label for="language2-picker-select"><b>Second language:</b></label>
-            <select name="language2-picker-select" id="language2-picker-select" bind:value={languageName2}
-                    on:change={changeLanguage2}>
-                {#each res.languages as lang}
-                    <option value={lang}>{lang}</option>
-                {/each}
-            </select>
+            <LanguageSelector
+                    changeLanguageFunc={changeLanguage2}
+                    bind:languageName={languageName2}
+                    showSolutionsAndTestsSelector={showSolutionsAndTestsSelector2}
+                    languageNumber="2"
+                    initValues={res}
+            />
+
+            <br>
 
             {#if showSolutionsAndTestsSelector2}
-                {#await solutionsAndTasks2}
-                    <p>Loading Solutions...</p>
-                {:then res}
-                    <label for="solution2-picker-select"><b>Select from solutions:</b></label>
-                    <select name="solution2-picker-select" id="solution2-picker-select"
-                            bind:value={solutionSelector2}
-                            on:change={insertSelectedSolution2IntoEditor}>
-                        {#each Object.entries(solutions2) as [id, info]}
-                            {#if info.exit_code === 0 || !showNotFailedSolutions }
-                                <option value={id} class="{info.exit_code !== 0 ? 'error-msg' : ''}">{info.date}
-                                    <span>{info.exit_code !== 0 ? '(failed)' : ''}</span></option>
-                            {/if}
-                        {/each}
-                    </select>
-
-                    &nbsp;
-
-                    <Button color="secondary" class="btn-sm" on:click={toggleSolution2Name}>Change name
-                    </Button>
-                    <Modal isOpen={openSolution2Name} {toggleSolution2Name}>
-                        <ModalHeader {toggleSolution2Name}>Change name</ModalHeader>
-                        <ModalBody>
-                            <FormGroup>
-                                <Label for="changeSolution2Name">Name</Label>
-                                <Input bind:value={solution2Name} id="changeSolution2Name"
-                                       placeholder="type name here"/>
-                            </FormGroup>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="primary" on:click={toggleSolution2Name}>Change</Button>
-                            <Button color="secondary" on:click={toggleSolution2Name}>Cancel</Button>
-                        </ModalFooter>
-                    </Modal>
-                    &nbsp;
-
-                    <label for="test2-picker-select"><b>Select from test:</b></label>
-                    <select name="test2-picker-select" id="test2-picker-select" bind:value={testSelector2}
-                            on:change={insertSelectedTest2IntoEditor}>
-                        {#each Object.entries(tests2) as [id, info]}
-                            {#if !showFinalTests || info.final}
-                                <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
-                                    <span>{info.final ? '(final)' : ''}</span></option>
-                            {/if}
-                        {/each}
-                    </select>
-
-                    &nbsp;
-
-                    <Button color="secondary" class="btn-sm" on:click={toggleTest2Name}>Change name</Button>
-                    <Modal isOpen={openTest2Name} {toggleTest2Name}>
-                        <ModalHeader {toggleTest2Name}>Change name</ModalHeader>
-                        <ModalBody>
-                            <FormGroup>
-                                <Label for="changeTest2Name">Name</Label>
-                                <Input bind:value={test2Name} id="changeTest2Name" placeholder="type name here"/>
-                            </FormGroup>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="primary" on:click={toggleTest2Name}>Change</Button>
-                            <Button color="secondary" on:click={toggleTest2Name}>Cancel</Button>
-                        </ModalFooter>
-                    </Modal>
-
-                {:catch error}
-                    <p style="color: red">{error.message}</p>
-                {/await}
+                <SolutionsAndTestsSelector
+                        solutionsAndTasksPromise={solutionsAndTasksPromise2}
+                        bind:solutionSelector={solutionSelector2}
+                        bind:testSelector={testSelector2}
+                        insertSelectedSolutionIntoEditor={insertSelectedSolution2IntoEditor}
+                        insertSelectedTestIntoEditor={insertSelectedTest2IntoEditor}
+                        solutions={solutions2}
+                        tests={tests2}
+                        languageNumber="2"
+                        showNotFailedSolutions={showNotFailedSolutions}
+                        showFinalTests={showFinalTests}
+                />
             {/if}
         {/if}
 
@@ -668,157 +579,46 @@
 
 <br>
 
-<!-- editor boxes -->
+<!-- editors -->
 
-<div class="grid" style="grid-template-columns: {gridStyle}">
-    {#await initValues}
-        <div>Loading description...</div>
-    {:then res}
-        <div>
-            <p>
-                {res.text}
-            </p>
-        </div>
-    {:catch error}
-        <div style="color: red">{error.message}</div>
-    {/await}
-
-    {#if showSolution1}
-        <div class="gutter-col gutter-col-1">
-            <div class="vl"></div>
-        </div>
-        <div bind:clientWidth={widthSolution1}>
-            <div id="solution1" style="width: {widthSolution1*widthConstant}px"></div>
-        </div>
-    {/if}
-
-    {#if showTest1}
-        <div class="gutter-col gutter-col-3">
-            <div class="vl"></div>
-        </div>
-        <div bind:clientWidth={widthTest1}>
-            <div id="test1" style="width: {widthTest1*widthConstant}px"></div>
-        </div>
-    {/if}
-
-    {#if showSolution2}
-        <div class="gutter-col gutter-col-5">
-            <div class="vl"></div>
-        </div>
-        <div bind:clientWidth={widthSolution2}>
-            <div id="solution2" style="width: {widthSolution2*widthConstant}px"></div>
-        </div>
-    {/if}
-
-    {#if showTest2}
-        <div class="gutter-col gutter-col-7">
-            <div class="vl"></div>
-        </div>
-        <div bind:clientWidth={widthTest2}>
-            <div id="test2" style="width: {widthTest2*widthConstant}px"></div>
-        </div>
-    {/if}
-</div>
+<CodeEditors
+        initValues={initValues}
+        showSolution1={showSolution1}
+        showTest1={showTest1}
+        showSolution2={showSolution2}
+        showTest2={showTest2}
+        --editor-height={editorHeight}
+/>
 
 <!-- test results 1 -->
 
 <br>
 
-{#if languageName1}
-    <div id="test-result-1">
-        <button type="button" on:click={runTest1HandleClick}>
-            Run 1. language
-        </button>
-
-        <br><br>
-        <!-- info box -->
-        <div class="info-box">
-            {#each infoBoxContent1 as line}
-                {line}<br>
-            {/each}
-        </div>
-        <br>
-
-        {#if showTest1Result}
-            {#await promiseTest1Result}
-                <p>loading...</p>
-            {:then res}
-                {#if res.solution.exit_code === 1}
-                    <p class="error-msg"><b>couldn't compile</b></p>
-                    <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
-                {:else}
-                    {#if res.solution.exit_code === 2}
-                        <p class="error-msg"><b>test failed</b></p>
-                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
-                    {:else}
-                        <p class="success-msg"><b>test OK</b></p>
-                        <p>compilation time: {res.solution.compilation_time} s</p>
-                        <p>real time: {res.solution.real_time} s</p>
-                        <p>kernel time: {res.solution.kernel_time} s</p>
-                        <p>user time: {res.solution.user_time} s</p>
-                        <p>max ram usage: {res.solution.max_ram_usage} mb</p>
-                        <p>binary size: {res.solution.binary_size} mb</p>
-                        <p>test output:</p>
-                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
-                    {/if}
-                {/if}
-            {:catch error}
-                <p style="color: red">{error.message}</p>
-            {/await}
-        {/if}
-    </div>
-{/if}
+<RunLanguagePanel
+        languageName={languageName1}
+        runTestHandleClick={runTest1HandleClick}
+        infoBoxContent={infoBoxContent1}
+        showTestResult={showTest1Result}
+        promiseTestResult={promiseTest1Result}
+        languageNumber="1"
+/>
 
 <!-- test results 2 -->
 
-{#if languageName2}
-    <div id="test-result-2">
-        <button type="button" on:click={runTest2HandleClick}>
-            Run 2. language
-        </button>
-
-        <br><br>
-        <!-- info box -->
-        <div class="info-box">
-            {#each infoBoxContent2 as line}
-                {line}<br>
-            {/each}
-        </div>
-        <br>
-
-        {#if showTest2Result}
-            {#await promiseTest2Result}
-                <p>loading...</p>
-            {:then res}
-                {#if res.solution.exit_code === 1}
-                    <p class="error-msg"><b>couldn't compile</b></p>
-                    <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
-                {:else}
-                    {#if res.solution.exit_code === 2}
-                        <p class="error-msg"><b>test failed</b></p>
-                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
-                    {:else}
-                        <p class="success-msg"><b>test OK</b></p>
-                        <p>compilation time: {res.solution.compilation_time} s</p>
-                        <p>real time: {res.solution.real_time} s</p>
-                        <p>kernel time: {res.solution.kernel_time} s</p>
-                        <p>user time: {res.solution.user_time} s</p>
-                        <p>max ram usage: {res.solution.max_ram_usage} mb</p>
-                        <p>binary size: {res.solution.binary_size} mb</p>
-                        <p>test output:</p>
-                        <div class="test-output">{res.solution.output.replaceAll('^', '\n')}</div>
-                    {/if}
-                {/if}
-            {:catch error}
-                <p style="color: red">{error.message}</p>
-            {/await}
-        {/if}
-    </div>
-{/if}
+<RunLanguagePanel
+        languageName={languageName2}
+        runTestHandleClick={runTest2HandleClick}
+        infoBoxContent={infoBoxContent2}
+        showTestResult={showTest2Result}
+        promiseTestResult={promiseTest2Result}
+        languageNumber="2"
+/>
 
 <!---------------------------------------- styles ---------------------------------------->
 
 <!-- css variables -->
+
+<!--<div style="&#45;&#45;editor-height: {editorHeight}"></div>-->
 
 <style>
     .selector label {
@@ -829,90 +629,4 @@
     .selector select {
         margin-top: 4px;
     }
-
-    .box textarea {
-        overflow-y: scroll;
-        overflow-x: scroll;
-        /*height: 100px;*/
-        /*width: 400px;*/
-        /*resize: none;*/
-        resize: vertical;
-        resize: horizontal;
-        /*resize: both;*/
-        white-space: nowrap;
-    }
-
-    .remove-text {
-        border-style: solid;
-        border-width: thin;
-        color: brown;
-        padding: 0.1%;
-    }
-
-    .reset-text {
-        border-style: solid;
-        border-width: thin;
-        color: darkgoldenrod;
-        padding: 0.1%;
-    }
-
-    #test-result-1 {
-        float: left;
-        width: 50%;
-    }
-
-    #test-result-2 {
-        float: right;
-        width: 45%;
-    }
-
-    .test-output {
-        white-space: pre-wrap;
-        border-style: solid;
-        border-width: thin;
-    }
-
-    .error-msg {
-        color: red;
-    }
-
-    .success-msg {
-        color: green;
-    }
-
-    .vl {
-        border-left: 4px solid indianred;
-        height: 500px;
-    }
-
-    .grid {
-        display: grid;
-    }
-
-    .gutter-col {
-        grid-row: 1/-1;
-        cursor: col-resize;
-    }
-
-    .gutter-col-1 {
-        grid-column: 2;
-    }
-
-    .gutter-col-3 {
-        grid-column: 4;
-    }
-
-    .gutter-col-5 {
-        grid-column: 6;
-    }
-
-    .gutter-col-7 {
-        grid-column: 8;
-    }
-
-    :global(.cm-scroller) {
-        overflow: auto;
-        max-height: 400px !important;
-    }
-
 </style>

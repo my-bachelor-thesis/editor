@@ -1,9 +1,9 @@
 <script>
-    export let showResults, promiseResult
+    export let showTestResult, promiseResult
 </script>
 
 
-{#if showResults}
+{#if showTestResult}
     {#await promiseResult}
         <p>loading...</p>
     {:then res}
@@ -27,7 +27,14 @@
             {/if}
         {/if}
     {:catch error}
-        <p style="color: red">{error.message}</p>
+        <p class="error">{error.message}</p>
     {/await}
 {/if}
 
+<style>
+    .test-output {
+        white-space: pre-wrap;
+        border-style: solid;
+        border-width: thin;
+    }
+</style>
