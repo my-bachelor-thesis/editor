@@ -9,6 +9,7 @@
     import ShowEditors from "./partial_components/add_task/ShowEditors.svelte"
     import {EditorView} from "@codemirror/view";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
+    import {tick} from "svelte";
 
     const languages = [
         {value: helpers.languages.Go, label: 'Go'},
@@ -97,7 +98,6 @@
                     if (!get(store.isAdmin)) {
                         msg = "the task was submitted for a review"
                     }
-                    console.log(msg)
                     helpers.redirectToHomeWithMessage(msg)
                 }).catch(err => postError = err)
         }
@@ -122,9 +122,9 @@
             case helpers.languages.Python:
                 isPythonEditors = true
         }
-        const id = `${language}-editor-final-test`;
+
         (async () => {
-            await helpers.waitForElementWithId(id)
+            await tick()
             let updateExtension = EditorView.updateListener.of((v) => {
                 if (v.docChanged) {
                     if ($errors[language] !== undefined && $errors[language] !== "" && editorsClass.finalTest.state.doc.toString() !== "") {
@@ -132,7 +132,7 @@
                     }
                 }
             })
-            let editor = helpers.Editor.newEditor(language, document.getElementById(id), updateExtension)
+            let editor = helpers.Editor.newEditor(language, document.getElementById(`${language}-editor-final-test`), updateExtension)
             editorsClass.finalTest = editor
         })()
     }

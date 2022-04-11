@@ -1,7 +1,7 @@
 <script>
-    import {GridStyleStore} from "./code_editors"
+    import {GridStyleStore} from "./gridstyle"
 
-    export let initValues, showSolution1, showTest1, showSolution2, showTest2
+    export let initValues, language1, language2
 
     let widthSolution1 = 0, widthTest1 = 0, widthSolution2 = 0, widthTest2 = 0
 
@@ -12,43 +12,50 @@
     {#await initValues}
         <div>Loading description...</div>
     {:then res}
-        <div>{@html res.text}</div>
+        <div>
+            <div class="editor-label">Description</div>
+            {@html res.text}
+        </div>
     {:catch error}
         <div style="color: red">{error.message}</div>
     {/await}
 
-    {#if showSolution1}
+    {#if language1.showSolution}
         <div class="gutter-col gutter-col-1">
             <div class="vl"></div>
         </div>
         <div bind:clientWidth={widthSolution1} id="aaa">
+            <div id="solution1-label" class="editor-label">Solution 1</div>
             <div id="solution1" style="width: {widthSolution1*widthConstant}px"></div>
         </div>
     {/if}
 
-    {#if showTest1}
+    {#if language1.showTest}
         <div class="gutter-col gutter-col-3">
             <div class="vl"></div>
         </div>
         <div bind:clientWidth={widthTest1}>
+            <div id="test1-label" class="editor-label">Test 1</div>
             <div id="test1" style="width: {widthTest1*widthConstant}px"></div>
         </div>
     {/if}
 
-    {#if showSolution2}
+    {#if language2.showSolution}
         <div class="gutter-col gutter-col-5">
             <div class="vl"></div>
         </div>
         <div bind:clientWidth={widthSolution2}>
+            <div id="solution2-label" class="editor-label">Solution 2</div>
             <div id="solution2" style="width: {widthSolution2*widthConstant}px"></div>
         </div>
     {/if}
 
-    {#if showTest2}
+    {#if language2.showTest}
         <div class="gutter-col gutter-col-7">
             <div class="vl"></div>
         </div>
         <div bind:clientWidth={widthTest2}>
+            <div id="test2-label" class="editor-label">Test 2</div>
             <div id="test2" style="width: {widthTest2*widthConstant}px"></div>
         </div>
     {/if}
@@ -58,6 +65,7 @@
     .vl {
         border-left: 4px solid lightslategrey;
         height: var(--editor-height);
+        margin-top: calc(var(--editor-height) * 0.035);
     }
 
     :global(.gutter.gutter-horizontal) {
@@ -93,5 +101,13 @@
     :global(.cm-scroller) {
         overflow: auto;
         max-height: var(--editor-height);
+    }
+
+    .editor-label {
+        font-weight: bold;
+        white-space: nowrap;
+        text-align: center;
+        margin-bottom: 1%;
+        color: darkgrey;
     }
 </style>

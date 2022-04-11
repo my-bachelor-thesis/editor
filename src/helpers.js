@@ -79,17 +79,6 @@ export function setStorage() {
     }
 }
 
-export async function waitForElementWithId(id, timeout = 10) {
-    timeout *= 1000 // from s to ms
-    let start = performance.now();
-    while (document.getElementById(id) === null) {
-        await new Promise(r => setTimeout(r, 50));
-        if (performance.now() - start > timeout) {
-            return
-        }
-    }
-}
-
 export class Editor {
     static #languageToCodemirrorFunction(language) {
         switch (language) {

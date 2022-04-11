@@ -3,7 +3,7 @@
 
     export let id
 
-    let solution1Name = ""
+    let name = ""
     let isOpened = false
     const toggle = () => (isOpened = !isOpened)
 </script>
@@ -14,7 +14,7 @@
     <ModalBody>
         <FormGroup>
             <Label for={id}>Name</Label>
-            <Input bind:value={solution1Name} id={id} placeholder="type name here"/>
+            <Input bind:value={name} id={id} placeholder="type name here"/>
         </FormGroup>
     </ModalBody>
     <ModalFooter>
