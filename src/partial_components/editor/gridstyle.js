@@ -7,6 +7,11 @@ export class GridStyleStore {
     static boxes = []
     static gridStyle = writable("")
 
+    static reset() {
+        this.boxes = []
+        this.gridStyle.set("")
+    }
+
     static addBoxes(numberOfBoxes) {
         this.setNumberOfBoxes(this.boxes.length + numberOfBoxes)
     }

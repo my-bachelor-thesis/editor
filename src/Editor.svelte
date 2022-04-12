@@ -9,6 +9,7 @@
     import SolutionsAndTestsSelector from "./partial_components/editor/SolutionsAndTestsSelector.svelte"
     import * as helpers from "./helpers"
     import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte"
+    import {GridStyleStore} from "./partial_components/editor/gridstyle";
 
     // variables //
 
@@ -65,6 +66,10 @@
     let language2 = new Language(2)
 
     let editorHeight = Math.floor(window.innerHeight / 1.5) + "px"
+
+    // reset gridstyle
+
+    GridStyleStore.reset()
 
     // helper functions //
 
