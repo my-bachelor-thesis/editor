@@ -2,9 +2,9 @@
     import ChangeNameButton from "./ChangeNameButton.svelte";
     import {Button} from "sveltestrap";
     import {GridStyleStore} from "./gridstyle";
-    import * as helpers from "../../helpers";
 
-    export let language, filters, url, testResultsCache, paringFunction
+    export let language, filters, url, testResultsCache, paringFunction,
+        insertSelectedSolutionIntoEditor, insertSelectedTestIntoEditor
 
     function minimizeMaximizeFunc(index) {
         let elementType = index % 2 === 0 ? "solution" : "test"
@@ -22,52 +22,6 @@
             editor.style.display = "none"
         }
     }
-
-    async function fetchCodeOfTest(id) {
-        return helpers.fetchJson(`${url}/code-of-test/${id}`)
-    }
-
-    async function fetchCodeOfSolution(id) {
-        return helpers.fetchJson(`${url}/code-of-solution/${id}`)
-    }
-
-    function loadResultFromCache() {
-        if (testResultsCache.has(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest))) {
-            language.testResult.show = true
-            language.testResult.promise = new Promise((resolve, _) => {
-                resolve(testResultsCache.get(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest)))
-            })
-            language.testResult.promise.then((res) => {
-                console.log(res)
-            })
-        }
-    }
-
-    function insertSelectedSolutionIntoEditor() {
-        language.infoBoxContent = []
-        language.testResult.show = false
-        loadResultFromCache()
-        fetchCodeOfSolution(language.solutionsAndTestsSelector.selectedSolution).then((data) => {
-            let code = data.code
-            language.editors.solution.dispatch({
-                changes: {from: 0, to: language.editors.solution.state.doc.length, insert: code}
-            })
-            language.cache.solutionFromLastRun = code
-        })
-    }
-
-    function insertSelectedTestIntoEditor() {
-        language.infoBoxContent = []
-        language.testResult.show = false
-        loadResultFromCache()
-        fetchCodeOfTest(language.solutionsAndTestsSelector.selectedTest).then((data) => {
-            let code = data.code
-            language.editors.test.dispatch({
-                changes: {from: 0, to: language.editors.test.state.doc.length, insert: code}
-            })
-            language.cache.testFromLastRun = code
-        })
-    }
 </script>
 
 {#await language.solutionsAndTestsSelector.promise}
@@ -76,7 +30,7 @@
     <label for="solution{language.number}-picker-select"><b>Select from solutions:</b></label>
     <select name="solution{language.number}-picker-select" id="solution{language.number}-picker-select"
             bind:value={language.solutionsAndTestsSelector.selectedSolution}
-            on:change={insertSelectedSolutionIntoEditor}>
+            on:change={() => insertSelectedSolutionIntoEditor(language)}>
         {#each Object.entries(language.cache.solutions) as [id, info]}
             {#if info.exit_code === 0 || !filters.showNotFailedSolutions }
                 <option value={id} class="{info.exit_code !== 0 ? 'error-msg' : ''}">{info.date}
@@ -94,7 +48,7 @@
     <label for="test{language.number}-picker-select"><b>Select from test:</b></label>
     <select name="test{language.number}-picker-select" id="test{language.number}-picker-select"
             bind:value={language.solutionsAndTestsSelector.selectedTest}
-            on:change={insertSelectedTestIntoEditor}>
+            on:change={() => insertSelectedTestIntoEditor(language)}>
         {#each Object.entries(language.cache.tests) as [id, info]}
             {#if !filters.showFinalTests || info.final}
                 <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}

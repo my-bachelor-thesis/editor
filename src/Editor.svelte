@@ -87,6 +87,55 @@
 
     }
 
+    // insert code into editors
+
+    async function fetchCodeOfTest(id) {
+        return helpers.fetchJson(`${url}/code-of-test/${id}`)
+    }
+
+    async function fetchCodeOfSolution(id) {
+        return helpers.fetchJson(`${url}/code-of-solution/${id}`)
+    }
+
+    function loadResultFromCache(language) {
+        console.log("==", language)
+        if (testResultsCache.has(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest))) {
+            language.testResult.show = true
+            language.testResult.promise = new Promise((resolve, _) => {
+                resolve(testResultsCache.get(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest)))
+            })
+            language.testResult.promise.then((res) => {
+                console.log(res)
+            })
+        }
+    }
+
+    function insertSelectedSolutionIntoEditor(language) {
+        language.infoBoxContent = []
+        language.testResult.show = false
+        loadResultFromCache(language)
+        fetchCodeOfSolution(language.solutionsAndTestsSelector.selectedSolution).then((data) => {
+            let code = data.code
+            language.editors.solution.dispatch({
+                changes: {from: 0, to: language.editors.solution.state.doc.length, insert: code}
+            })
+            language.cache.solutionFromLastRun = code
+        })
+    }
+
+    function insertSelectedTestIntoEditor(language) {
+        language.infoBoxContent = []
+        language.testResult.show = false
+        loadResultFromCache(language)
+        fetchCodeOfTest(language.solutionsAndTestsSelector.selectedTest).then((data) => {
+            let code = data.code
+            language.editors.test.dispatch({
+                changes: {from: 0, to: language.editors.test.state.doc.length, insert: code}
+            })
+            language.cache.testFromLastRun = code
+        })
+    }
+
     // init values //
 
     async function getInitValues() {
@@ -146,6 +195,8 @@
                 initValues={res}
                 taskId={taskId}
                 url={url}
+                insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
+                insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
         />
 
         <br>
@@ -158,6 +209,8 @@
                     url={url}
                     testResultsCache={testResultsCache}
                     paringFunction={paringFunction}
+                    insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
+                    insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
             />
 
             <!-- language 2 -->
@@ -167,6 +220,8 @@
                     initValues={res}
                     taskId={taskId}
                     url={url}
+                    insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
+                    insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
             />
 
             <br>
@@ -178,6 +233,8 @@
                         url={url}
                         testResultsCache={testResultsCache}
                         paringFunction={paringFunction}
+                        insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
+                        insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
                 />
             {/if}
         {/if}

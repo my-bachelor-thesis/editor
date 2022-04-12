@@ -5,7 +5,8 @@
     import * as helpers from "../../helpers"
     import {tick} from "svelte";
 
-    export let language, initValues, taskId, url
+    export let language, initValues, taskId, url,
+        insertSelectedSolutionIntoEditor, insertSelectedTestIntoEditor
 
     function hideLanguage() {
         language.solutionsAndTestsSelector.show = false
@@ -90,6 +91,14 @@
         language.solutionsAndTestsSelector.promise.then((data) => {
             language.cache.solutions = data.solutions
             language.cache.tests = data.tests
+            if (data.solutions.length > 0){
+                language.solutionsAndTestsSelector.selectedSolution = data.solutions[0]
+                insertSelectedSolutionIntoEditor(language)
+            }
+            if (data.tests.length > 0){
+                language.solutionsAndTestsSelector.selectedTest = data.test[0]
+                insertSelectedTestIntoEditor(language)
+            }
         })
     }
 </script>
