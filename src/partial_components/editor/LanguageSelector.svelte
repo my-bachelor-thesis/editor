@@ -21,6 +21,21 @@
         return helpers.fetchJson(`${url}/solutions-tests/${taskId}/${language}`)
     }
 
+    function idFromTrackNumber(n) {
+        switch (n) {
+            case 1:
+                return ["solution1"]
+            case 3:
+                return ["solution1", "test1"]
+            case 5:
+                return ["test1", "solution2"]
+            case 7:
+                return ["solution2", "test2"]
+            default:
+                return []
+        }
+    }
+
     function changeLanguage() {
         language.infoBoxContent = []
         if (language.number === 1 && GridStyleStore.isEmpty()) {
@@ -42,15 +57,31 @@
                 language.editors.test = helpers.Editor.newEditor(language.name, document.getElementById(`test${language.number}`))
             })()
         }
+        let solutionTrackNumber = language.number === 1 ? 1 : 5;
         (async () => {
             await tick()
             Split({
+                onDragStart: function (_, n) {
+                    for (const id of idFromTrackNumber(n)) {
+                        document.getElementById(id).style.display = "none"
+                    }
+                },
+                onDragEnd: function (_, n) {
+                    for (const id of idFromTrackNumber(n)) {
+                        document.getElementById(id).style.display = "block"
+                        let label = document.getElementById(`${id}-label`)
+                        if (label.style.display === "none") {
+                            label.style.display = "block"
+                            GridStyleStore.boxes[GridStyleStore.idToIndex(id)] = GridStyleStore.boxLength
+                        }
+                    }
+                },
                 columnGutters: [{
-                    track: 1,
-                    element: document.querySelector('.gutter-col-1'),
+                    track: solutionTrackNumber,
+                    element: document.querySelector(`.gutter-col-${solutionTrackNumber}`),
                 }, {
-                    track: 3,
-                    element: document.querySelector('.gutter-col-3'),
+                    track: solutionTrackNumber + 2,
+                    element: document.querySelector(`.gutter-col-${solutionTrackNumber + 2}`),
                 }],
             })
         })()
@@ -63,8 +94,10 @@
     }
 </script>
 
-<label for="language{language.number}-picker-select"><b>{language.number === 1 ? "First" : "Second"} language:</b></label>
-<select name="language{language.number}-picker-select" id="language{language.number}-picker-select" bind:value={language.name}
+<label for="language{language.number}-picker-select"><b>{language.number === 1 ? "First" : "Second"}
+    language:</b></label>
+<select name="language{language.number}-picker-select" id="language{language.number}-picker-select"
+        bind:value={language.name}
         on:change={changeLanguage}>
     {#each initValues.languages as lang}
         <option value={lang}>{lang}</option>

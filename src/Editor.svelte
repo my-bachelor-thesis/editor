@@ -1,20 +1,14 @@
 <script>
-    import Split from 'split-grid'
-    import {basicSetup, EditorState} from "@codemirror/basic-setup"
-    import {EditorView, keymap} from "@codemirror/view"
-    import {indentWithTab} from "@codemirror/commands"
     import {go} from "@codemirror/legacy-modes/mode/go"
     import {StreamLanguage} from "@codemirror/stream-parser"
     import {python} from "@codemirror/lang-python"
     import * as store from "./store"
     import {get} from "svelte/store"
-    import RunLanguagePanel from "./partial_components/editor/RunLanguagePanel.svelte";
-    import CodeEditors from "./partial_components/editor/CodeEditors.svelte";
-    import SolutionsAndTestsSelector from "./partial_components/editor/SolutionsAndTestsSelector.svelte";
-    import {GridStyleStore} from "./partial_components/editor/gridstyle";
+    import RunLanguagePanel from "./partial_components/editor/RunLanguagePanel.svelte"
+    import CodeEditors from "./partial_components/editor/CodeEditors.svelte"
+    import SolutionsAndTestsSelector from "./partial_components/editor/SolutionsAndTestsSelector.svelte"
     import * as helpers from "./helpers"
-    import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte";
-    import {tick} from "svelte";
+    import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte"
 
     // variables //
 
@@ -109,7 +103,7 @@
         <p><b>Author:</b> {task.author}</p>
         <p><b>Approver:</b> {task.approver}</p>
     {:catch error}
-        <p style="color: red">{error.message}</p>
+        <p class="error-msg">{error.message}</p>
     {/await}
 </div>
 

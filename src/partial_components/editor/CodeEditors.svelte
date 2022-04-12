@@ -5,7 +5,7 @@
 
     let widthSolution1 = 0, widthTest1 = 0, widthSolution2 = 0, widthTest2 = 0
 
-    const widthConstant = 0.96
+    const widthConstant = 0.99
 </script>
 
 <div class="grid" style="grid-template-columns: {$GridStyleStore}">
@@ -24,7 +24,7 @@
         <div class="gutter-col gutter-col-1">
             <div class="vl"></div>
         </div>
-        <div bind:clientWidth={widthSolution1} id="aaa">
+        <div bind:clientWidth={widthSolution1}>
             <div id="solution1-label" class="editor-label">Solution 1</div>
             <div id="solution1" style="width: {widthSolution1*widthConstant}px"></div>
         </div>
@@ -65,7 +65,7 @@
     .vl {
         border-left: 4px solid lightslategrey;
         height: var(--editor-height);
-        margin-top: calc(var(--editor-height) * 0.035);
+        margin-top: calc(var(--editor-height) * 0.05);
     }
 
     :global(.gutter.gutter-horizontal) {

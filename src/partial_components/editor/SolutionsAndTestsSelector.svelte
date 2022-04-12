@@ -7,13 +7,20 @@
     export let language, filters, url, testResultsCache, paringFunction
 
     function minimizeMaximizeFunc(index) {
-        console.log(index)
+        let elementType = index % 2 === 0 ? "solution" : "test"
+        let label = document.getElementById(`${elementType}${language.number}-label`)
+        let editor = document.getElementById(`${elementType}${language.number}`)
+
         let start = language.number === 1 ? 1 : 3
         GridStyleStore.minimizeMaximize(start + index)
-        // let elementType = index % 2 === 0 ? "solution" : "test"
-        // let minimizedElement = document.getElementById(`${elementType}${language.number}-label`)
-        // console.log(minimizedElement)
-        // minimizedElement.style.display === "none" ? minimizedElement.style.display = "block" : minimizedElement.style.display = "none"
+
+        if (label.style.display === "none") {
+            label.style.display = "block"
+            editor.style.display = "block"
+        } else {
+            label.style.display = "none"
+            editor.style.display = "none"
+        }
     }
 
     async function fetchCodeOfTest(id) {
@@ -80,7 +87,8 @@
     &nbsp;
     <ChangeNameButton id="changeSolution{language.number}Name"/>
     &nbsp;
-    <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(0)}>Minimize/maximize</Button>
+    <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(0)}>Minimize/maximize
+    </Button>
 
     <br>
     <label for="test{language.number}-picker-select"><b>Select from test:</b></label>
