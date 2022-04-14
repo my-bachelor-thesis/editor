@@ -10,10 +10,13 @@
     import * as helpers from "./helpers"
     import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte"
     import {GridStyleStore} from "./partial_components/editor/gridstyle";
+    import {SelectedSolutionStore, SelectedTestStore} from "./partial_components/editor/selected";
 
     // variables //
 
     let url = get(store.url)
+
+    let isSecondLanguageIsSelected = false
 
     const taskId = new URLSearchParams(window.location.search).get('id')
     let initValues = getInitValues()
@@ -28,13 +31,13 @@
     function SolutionsAndTests() {
         this.show = false
         this.promise = Promise.resolve([])
-        this.selectedSolution = 0
-        this.selectedTest = 0
+        this.tests = {}
+        this.testsForSelect = []
+        this.solutions = {}
+        this.solutionsForSelect = []
     }
 
     function Cache() {
-        this.tests = new Map()
-        this.solutions = new Map()
         this.testFromLastRun = ""
         this.solutionFromLastRun = ""
     }
@@ -67,10 +70,6 @@
 
     let editorHeight = Math.floor(window.innerHeight / 1.5) + "px"
 
-    // reset gridstyle
-
-    GridStyleStore.reset()
-
     // helper functions //
 
     function paringFunction(a, b) {
@@ -97,24 +96,26 @@
         return helpers.fetchJson(`${url}/code-of-solution/${id}`)
     }
 
-    function loadResultFromCache(language) {
-        console.log("==", language)
-        if (testResultsCache.has(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest))) {
-            language.testResult.show = true
-            language.testResult.promise = new Promise((resolve, _) => {
-                resolve(testResultsCache.get(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest)))
-            })
-            language.testResult.promise.then((res) => {
-                console.log(res)
-            })
-        }
-    }
+    // function loadResultFromCache(language) {
+    //     if (testResultsCache.has(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest))) {
+    //         language.testResult.show = true
+    //         language.testResult.promise = new Promise((resolve, _) => {
+    //             resolve(testResultsCache.get(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest)))
+    //         })
+    //         language.testResult.promise.then((res) => {
+    //             console.log(res)
+    //         })
+    //     }
+    // }
 
-    function insertSelectedSolutionIntoEditor(language) {
+    function insertSelectedSolutionIntoEditor(language, selected) {
+        if (selected === undefined) {
+            return
+        }
         language.infoBoxContent = []
         language.testResult.show = false
-        loadResultFromCache(language)
-        fetchCodeOfSolution(language.solutionsAndTestsSelector.selectedSolution).then((data) => {
+        // loadResultFromCache(language)
+        fetchCodeOfSolution(selected.value).then((data) => {
             let code = data.code
             language.editors.solution.dispatch({
                 changes: {from: 0, to: language.editors.solution.state.doc.length, insert: code}
@@ -123,11 +124,14 @@
         })
     }
 
-    function insertSelectedTestIntoEditor(language) {
+    function insertSelectedTestIntoEditor(language, selected) {
+        if (selected === undefined) {
+            return
+        }
         language.infoBoxContent = []
         language.testResult.show = false
-        loadResultFromCache(language)
-        fetchCodeOfTest(language.solutionsAndTestsSelector.selectedTest).then((data) => {
+        // loadResultFromCache(language)
+        fetchCodeOfTest(selected.value).then((data) => {
             let code = data.code
             language.editors.test.dispatch({
                 changes: {from: 0, to: language.editors.test.state.doc.length, insert: code}
@@ -141,13 +145,30 @@
     async function getInitValues() {
         return helpers.fetchJson(`${url}/init-data/${taskId}`)
     }
+
+
+    // reset gridstyle
+
+    GridStyleStore.reset()
+
+    // stores
+
+    let selectedSolutionLanguage1Store = new SelectedSolutionStore()
+    let selectedTestLanguage1Store = new SelectedTestStore()
+    let selectedSolutionLanguage2Store = new SelectedSolutionStore()
+    let selectedTestLanguage2Store = new SelectedTestStore()
+
+    selectedSolutionLanguage1Store.subscribe(val => insertSelectedSolutionIntoEditor(language1, val))
+    selectedTestLanguage1Store.subscribe(val => insertSelectedTestIntoEditor(language1, val))
+    selectedSolutionLanguage2Store.subscribe(val => insertSelectedSolutionIntoEditor(language2, val))
+    selectedTestLanguage2Store.subscribe(val => insertSelectedTestIntoEditor(language2, val))
 </script>
 
 <!---------------------------------------- html starts here ---------------------------------------->
 
 <!-- initial info -->
 
-<div class="title">
+<div class="small-margin">
     {#await initValues}
         <p>Loading title...</p>
     {:then task}
@@ -161,24 +182,27 @@
     {/await}
 </div>
 
-<br>
-<hr>
+{#if language1.solutionsAndTestsSelector.show}
 
-<fieldset>
-    <legend>Choose filters</legend>
-    <div>
-        <label>
-            <input type="checkbox" bind:checked={filters.showNotFailedSolutions}>
-            show only solutions that didn't fail
-        </label>
-    </div>
-    <div>
-        <label>
-            <input type="checkbox" bind:checked={filters.showFinalTests}>
-            show only final tests
-        </label>
-    </div>
-</fieldset>
+    <hr>
+
+    <fieldset class="small-margin">
+        <legend>Choose filters</legend>
+        <div>
+            <label>
+                <input type="checkbox" bind:checked={filters.showNotFailedSolutions}>
+                show only solutions that didn't fail
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="checkbox" bind:checked={filters.showFinalTests}>
+                show only final tests
+            </label>
+        </div>
+    </fieldset>
+
+{/if}
 
 <!-- selectors -->
 
@@ -195,8 +219,9 @@
                 initValues={res}
                 taskId={taskId}
                 url={url}
-                insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
-                insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
+                selectedSolutionStore={selectedSolutionLanguage1Store}
+                selectedTestStore={selectedTestLanguage1Store}
+                bind:isSecondLanguageIsSelected={isSecondLanguageIsSelected}
         />
 
         <br>
@@ -205,12 +230,11 @@
 
             <SolutionsAndTestsSelector
                     bind:language={language1}
-                    filters={filters}
                     url={url}
                     testResultsCache={testResultsCache}
                     paringFunction={paringFunction}
-                    insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
-                    insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
+                    selectedSolutionStore={selectedSolutionLanguage1Store}
+                    selectedTestStore={selectedTestLanguage1Store}
             />
 
             <!-- language 2 -->
@@ -220,8 +244,9 @@
                     initValues={res}
                     taskId={taskId}
                     url={url}
-                    insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
-                    insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
+                    selectedSolutionStore={selectedSolutionLanguage2Store}
+                    selectedTestStore={selectedTestLanguage2Store}
+                    bind:isSecondLanguageIsSelected={isSecondLanguageIsSelected}
             />
 
             <br>
@@ -229,14 +254,19 @@
             {#if language2.solutionsAndTestsSelector.show}
                 <SolutionsAndTestsSelector
                         bind:language={language2}
-                        filters={filters}
                         url={url}
                         testResultsCache={testResultsCache}
                         paringFunction={paringFunction}
-                        insertSelectedSolutionIntoEditor={insertSelectedSolutionIntoEditor}
-                        insertSelectedTestIntoEditor={insertSelectedTestIntoEditor}
+                        selectedSolutionStore={selectedSolutionLanguage2Store}
+                        selectedTestStore={selectedTestLanguage2Store}
                 />
+            {:else}
+                <br>
+                <hr>
             {/if}
+        {:else}
+            <br>
+            <hr>
         {/if}
 
     {:catch error}

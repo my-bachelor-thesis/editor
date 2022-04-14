@@ -25,7 +25,7 @@
     }
 </script>
 
-<h1 class="title">{title}</h1>
+<h1 class="small-margin">{title}</h1>
 
 <SuccessMessage msg={message}/>
 <ErrorMessage msg={postError}/>

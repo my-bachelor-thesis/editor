@@ -181,7 +181,7 @@
     <link href="/css/quill.snow.css" rel="stylesheet">
 </svelte:head>
 
-<h1 class="title">Add a task</h1>
+<h1 class="small-margin">Add a task</h1>
 
 <ErrorMessage msg={postError}/>
 

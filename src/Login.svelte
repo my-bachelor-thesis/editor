@@ -41,7 +41,7 @@
 
 </script>
 
-<h1 class="title">Login</h1>
+<h1 class="small-margin">Login</h1>
 
 <ErrorMessage msg={postError}/>
 

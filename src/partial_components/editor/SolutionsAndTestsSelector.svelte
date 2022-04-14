@@ -2,9 +2,9 @@
     import ChangeNameButton from "./ChangeNameButton.svelte";
     import {Button} from "sveltestrap";
     import {GridStyleStore} from "./gridstyle";
+    import Select from "svelte-select";
 
-    export let language, filters, url, testResultsCache, paringFunction,
-        insertSelectedSolutionIntoEditor, insertSelectedTestIntoEditor
+    export let language, url, testResultsCache, paringFunction, selectedSolutionStore, selectedTestStore
 
     function minimizeMaximizeFunc(index) {
         let elementType = index % 2 === 0 ? "solution" : "test"
@@ -24,44 +24,44 @@
     }
 </script>
 
-{#await language.solutionsAndTestsSelector.promise}
-    <p>Loading Solutions...</p>
-{:then res}
-    <label for="solution{language.number}-picker-select"><b>Select from solutions:</b></label>
-    <select name="solution{language.number}-picker-select" id="solution{language.number}-picker-select"
-            bind:value={language.solutionsAndTestsSelector.selectedSolution}
-            on:change={() => insertSelectedSolutionIntoEditor(language)}>
-        {#each Object.entries(language.cache.solutions) as [id, info]}
-            {#if info.exit_code === 0 || !filters.showNotFailedSolutions }
-                <option value={id} class="{info.exit_code !== 0 ? 'error-msg' : ''}">{info.date}
-                    <span>{info.exit_code !== 0 ? '(failed)' : ''}</span></option>
-            {/if}
-        {/each}
-    </select>
-    &nbsp;
-    <ChangeNameButton id="changeSolution{language.number}Name"/>
-    &nbsp;
-    <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(0)}>Minimize/maximize
-    </Button>
+<div class="small-margin">
 
-    <br>
-    <label for="test{language.number}-picker-select"><b>Select from test:</b></label>
-    <select name="test{language.number}-picker-select" id="test{language.number}-picker-select"
-            bind:value={language.solutionsAndTestsSelector.selectedTest}
-            on:change={() => insertSelectedTestIntoEditor(language)}>
-        {#each Object.entries(language.cache.tests) as [id, info]}
-            {#if !filters.showFinalTests || info.final}
-                <option value={id} class="{info.final ? 'error-msg' : ''}">{info.date}
-                    <span>{info.final ? '(final)' : ''}</span></option>
-            {/if}
-        {/each}
-    </select>
-    &nbsp;
-    <ChangeNameButton id="changeTest{language.number}Name"/>
-    &nbsp;
-    <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(1)}>Minimize/maximize</Button>
-{:catch error}
-    <p style="color: red">{error.message}</p>
-{/await}
+    {#await language.solutionsAndTestsSelector.promise}
+        <p>Loading Solutions...</p>
+    {:then _}
+        <div class="solutions-and-tests-selector">
+            <label for="solution{language.number}-picker-select"><b>Select from solutions:</b></label>
+            <Select id="solution{language.number}-picker-select"
+                    items={language.solutionsAndTestsSelector.solutionsForSelect}
+                    bind:value={$selectedSolutionStore} isClearable={false}/>
+        </div>
+        <ChangeNameButton id="changeSolution{language.number}Name"/>
+        &nbsp;
+        <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(0)}>Minimize/maximize
+        </Button>
+
+        <br>
+
+        <div class="solutions-and-tests-selector">
+            <label for="test{language.number}-picker-select"><b>Select from tests:</b></label>
+            <Select id="test{language.number}-picker-select" items={language.solutionsAndTestsSelector.testsForSelect}
+                    bind:value={$selectedTestStore} isClearable={false}/>
+        </div>
+        <ChangeNameButton id="changeTest{language.number}Name"/>
+        &nbsp;
+        <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(1)}>Minimize/maximize</Button>
+    {:catch error}
+        <p style="color: red">{error.message}</p>
+    {/await}
+
+</div>
 
 <hr>
+
+<style>
+    .solutions-and-tests-selector {
+        max-width: 30%;
+        margin-top: 0.5%;
+        margin-bottom: 1%;
+    }
+</style>

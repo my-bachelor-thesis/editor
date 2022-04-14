@@ -73,7 +73,7 @@
     }
 </script>
 
-<h1 class="title">Register</h1>
+<h1 class="small-margin">Register</h1>
 
 <ErrorMessage msg={postError}/>
 

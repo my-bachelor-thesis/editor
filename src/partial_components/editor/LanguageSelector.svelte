@@ -1,14 +1,16 @@
 <script>
-    import {Button} from "sveltestrap";
     import {GridStyleStore} from "./gridstyle";
     import Split from "split-grid";
     import * as helpers from "../../helpers"
     import {tick} from "svelte";
+    import Select from "svelte-select";
 
-    export let language, initValues, taskId, url,
-        insertSelectedSolutionIntoEditor, insertSelectedTestIntoEditor
+    export let language, initValues, taskId, url, selectedSolutionStore, selectedTestStore, isSecondLanguageIsSelected
 
     function hideLanguage() {
+        if (language.number === 2){
+            isSecondLanguageIsSelected = false
+        }
         language.solutionsAndTestsSelector.show = false
         language.name = ""
         GridStyleStore.removeBoxes(2)
@@ -37,7 +39,31 @@
         }
     }
 
-    function changeLanguage() {
+    function transformSolutionsForSelect(solutions) {
+        let res = []
+        for (const [id, solution] of Object.entries(solutions)) {
+            let label = `${solution.name === "" ? "" : solution.name + " - "}${solution.date}${solution.exit_code === 0 ? "" : " ❌ "}${solution.public === true ? "(public)" : ""}`
+            res.push({value: id, label: label})
+        }
+        return res
+    }
+
+    function transformTestsForSelect(tests) {
+        let res = []
+        for (const [id, test] of Object.entries(tests)) {
+            let label = `${test.name === "" ? "" : test.name + " - "}${test.date}${test.final === true ? "" : " ✔ "}${test.public === true ? "(public)" : ""}`
+            res.push({value: id, label: label})
+        }
+        return res
+    }
+
+    function changeLanguage(event) {
+        language.name = event.detail.value
+
+        if (language.number === 2) {
+            isSecondLanguageIsSelected = true
+        }
+
         language.infoBoxContent = []
         if (language.number === 1 && GridStyleStore.isEmpty()) {
             GridStyleStore.addBoxes(1)
@@ -89,28 +115,41 @@
         language.solutionsAndTestsSelector.show = true
         language.solutionsAndTestsSelector.promise = fetchSolutionsAndTasks(language.name)
         language.solutionsAndTestsSelector.promise.then((data) => {
-            language.cache.solutions = data.solutions
-            language.cache.tests = data.tests
-            if (data.solutions.length > 0){
-                language.solutionsAndTestsSelector.selectedSolution = data.solutions[0]
-                insertSelectedSolutionIntoEditor(language)
+            language.solutionsAndTestsSelector.solutions = data.solutions
+            language.solutionsAndTestsSelector.tests = data.tests
+            if (Object.keys(language.solutionsAndTestsSelector.solutions).length > 0) {
+                language.solutionsAndTestsSelector.solutionsForSelect = transformSolutionsForSelect(language.solutionsAndTestsSelector.solutions)
+                // TODO: zorad podla datumu vzostupne
+                selectedSolutionStore.value.set(language.solutionsAndTestsSelector.solutionsForSelect[0])
             }
-            if (data.tests.length > 0){
-                language.solutionsAndTestsSelector.selectedTest = data.test[0]
-                insertSelectedTestIntoEditor(language)
+            if (Object.keys(language.solutionsAndTestsSelector.tests).length > 0) {
+                language.solutionsAndTestsSelector.testsForSelect = transformTestsForSelect(language.solutionsAndTestsSelector.tests)
+                selectedTestStore.value.set(language.solutionsAndTestsSelector.testsForSelect[0])
             }
         })
     }
+
+    function transformLanguagesForSelector(languages) {
+        let res = []
+        for (const lang of languages) {
+            res.push({value: lang, label: lang})
+        }
+        return res
+    }
 </script>
 
-<label for="language{language.number}-picker-select"><b>{language.number === 1 ? "First" : "Second"}
-    language:</b></label>
-<select name="language{language.number}-picker-select" id="language{language.number}-picker-select"
-        bind:value={language.name}
-        on:change={changeLanguage}>
-    {#each initValues.languages as lang}
-        <option value={lang}>{lang}</option>
-    {/each}
-</select>
-&nbsp;
-<Button color="secondary" class="btn-sm" on:click={() => hideLanguage(language.number)}>Deselect language</Button>
+<div class="small-margin" style="margin-bottom: -2%">
+    <div class="language-selector">
+        <label for="language{language.number}-picker-select"><b>{language.number === 1 ? "First" : "Second"}
+            language:</b></label>
+        <Select id="language{language.number}-picker-select" items={transformLanguagesForSelector(initValues.languages)}
+                on:select={changeLanguage} on:clear={() => hideLanguage(language.number)}
+                isClearable={!(isSecondLanguageIsSelected && language.number === 1)}/>
+    </div>
+</div>
+
+<style>
+    .language-selector {
+        max-width: 20%;
+    }
+</style>

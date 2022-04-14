@@ -103,8 +103,11 @@ footer {
     text-align: center;
 }
 
-.title {
-    margin: 2%;
+.small-margin {
+    margin-left: 2%;
+    margin-right: 2%;
+    margin-bottom: 1%;
+    margin-top: 1%;
 }
 
 .easy {
