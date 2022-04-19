@@ -24,44 +24,44 @@
     }
 </script>
 
-<div class="small-margin">
 
-    {#await language.solutionsAndTestsSelector.promise}
-        <p>Loading Solutions...</p>
-    {:then _}
-        <div class="solutions-and-tests-selector">
-            <label for="solution{language.number}-picker-select"><b>Select from solutions:</b></label>
-            <Select id="solution{language.number}-picker-select"
-                    items={language.solutionsAndTestsSelector.solutionsForSelect}
-                    bind:value={$selectedSolutionStore} isClearable={false}/>
-        </div>
+{#await language.solutionsAndTestsSelector.promise}
+    <p>Loading Solutions...</p>
+{:then _}
+
+    <div class="solutions-and-tests-selector">
+        <label for="solution{language.number}-picker-select" class="no-wrap"><b>Select from solutions:</b></label>
+        <Select id="solution{language.number}-picker-select"
+                items={language.solutionsAndTestsSelector.solutionsForSelect}
+                bind:value={$selectedSolutionStore} isClearable={false}/>
+    </div>
+
+    <div>
         <ChangeNameButton id="changeSolution{language.number}Name"/>
-        &nbsp;
-        <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(0)}>Minimize/maximize
-        </Button>
 
-        <br>
-
-        <div class="solutions-and-tests-selector">
-            <label for="test{language.number}-picker-select"><b>Select from tests:</b></label>
-            <Select id="test{language.number}-picker-select" items={language.solutionsAndTestsSelector.testsForSelect}
-                    bind:value={$selectedTestStore} isClearable={false}/>
+        <div style="margin-top: 1%">
+            <Button class="no-wrap" color="secondary" size="sm" on:click={() => minimizeMaximizeFunc(0)}>
+                Minimize/maximize
+            </Button>
         </div>
+    </div>
+
+
+    <div class="solutions-and-tests-selector">
+        <label for="test{language.number}-picker-select" class="no-wrap"><b>Select from tests:</b></label>
+        <Select id="test{language.number}-picker-select" items={language.solutionsAndTestsSelector.testsForSelect}
+                bind:value={$selectedTestStore} isClearable={false}/>
+    </div>
+
+    <div>
         <ChangeNameButton id="changeTest{language.number}Name"/>
-        &nbsp;
-        <Button color="secondary" class="btn-sm" on:click={() => minimizeMaximizeFunc(1)}>Minimize/maximize</Button>
-    {:catch error}
-        <p style="color: red">{error.message}</p>
-    {/await}
 
-</div>
-
-<hr>
-
-<style>
-    .solutions-and-tests-selector {
-        max-width: 30%;
-        margin-top: 0.5%;
-        margin-bottom: 1%;
-    }
-</style>
+        <div style="margin-top: 1%">
+            <Button class="no-wrap" color="secondary" size="sm" on:click={() => minimizeMaximizeFunc(1)}>
+                Minimize/maximize
+            </Button>
+        </div>
+    </div>
+{:catch error}
+    <p style="color: red">{error.message}</p>
+{/await}

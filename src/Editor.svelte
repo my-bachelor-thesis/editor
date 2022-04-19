@@ -214,60 +214,62 @@
         <!-- language 1 -->
         <hr>
 
-        <LanguageSelector
-                bind:language={language1}
-                initValues={res}
-                taskId={taskId}
-                url={url}
-                selectedSolutionStore={selectedSolutionLanguage1Store}
-                selectedTestStore={selectedTestLanguage1Store}
-                bind:isSecondLanguageIsSelected={isSecondLanguageIsSelected}
-        />
-
-        <br>
-
-        {#if language1.solutionsAndTestsSelector.show}
-
-            <SolutionsAndTestsSelector
-                    bind:language={language1}
-                    url={url}
-                    testResultsCache={testResultsCache}
-                    paringFunction={paringFunction}
-                    selectedSolutionStore={selectedSolutionLanguage1Store}
-                    selectedTestStore={selectedTestLanguage1Store}
-            />
-
-            <!-- language 2 -->
+        <div class="one-row-grid">
 
             <LanguageSelector
-                    bind:language={language2}
+                    bind:language={language1}
                     initValues={res}
                     taskId={taskId}
                     url={url}
-                    selectedSolutionStore={selectedSolutionLanguage2Store}
-                    selectedTestStore={selectedTestLanguage2Store}
+                    selectedSolutionStore={selectedSolutionLanguage1Store}
+                    selectedTestStore={selectedTestLanguage1Store}
                     bind:isSecondLanguageIsSelected={isSecondLanguageIsSelected}
             />
 
-            <br>
+            {#if language1.solutionsAndTestsSelector.show}
 
-            {#if language2.solutionsAndTestsSelector.show}
                 <SolutionsAndTestsSelector
-                        bind:language={language2}
+                        bind:language={language1}
                         url={url}
                         testResultsCache={testResultsCache}
                         paringFunction={paringFunction}
+                        selectedSolutionStore={selectedSolutionLanguage1Store}
+                        selectedTestStore={selectedTestLanguage1Store}
+                />
+
+            {/if}
+
+        </div>
+
+        <!--         language 2 -->
+        {#if language1.solutionsAndTestsSelector.show}
+            <div class="one-row-grid">
+
+                <LanguageSelector
+                        bind:language={language2}
+                        initValues={res}
+                        taskId={taskId}
+                        url={url}
                         selectedSolutionStore={selectedSolutionLanguage2Store}
                         selectedTestStore={selectedTestLanguage2Store}
+                        bind:isSecondLanguageIsSelected={isSecondLanguageIsSelected}
                 />
-            {:else}
-                <br>
-                <hr>
-            {/if}
-        {:else}
-            <br>
-            <hr>
+
+                {#if language2.solutionsAndTestsSelector.show}
+                    <SolutionsAndTestsSelector
+                            bind:language={language2}
+                            url={url}
+                            testResultsCache={testResultsCache}
+                            paringFunction={paringFunction}
+                            selectedSolutionStore={selectedSolutionLanguage2Store}
+                            selectedTestStore={selectedTestLanguage2Store}
+                    />
+                {/if}
+
+            </div>
         {/if}
+
+        <br>
 
     {:catch error}
         <p style="color: red">{error.message}</p>
@@ -311,12 +313,9 @@
 <!---------------------------------------- styles ---------------------------------------->
 
 <style>
-    .selector label {
-        display: inline;
-        padding-right: 4px;
-    }
-
-    .selector select {
-        margin-top: 4px;
+    .one-row-grid {
+        display: grid;
+        gap: 1rem;
+        grid-auto-flow: column;
     }
 </style>

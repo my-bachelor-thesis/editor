@@ -8,7 +8,7 @@
     export let language, initValues, taskId, url, selectedSolutionStore, selectedTestStore, isSecondLanguageIsSelected
 
     function hideLanguage() {
-        if (language.number === 2){
+        if (language.number === 2) {
             isSecondLanguageIsSelected = false
         }
         language.solutionsAndTestsSelector.show = false
@@ -43,7 +43,7 @@
         let res = []
         for (const [id, solution] of Object.entries(solutions)) {
             let label = `${solution.name === "" ? "" : solution.name + " - "}${solution.date}${solution.exit_code === 0 ? "" : " ❌ "}${solution.public === true ? "(public)" : ""}`
-            res.push({value: id, label: label})
+            res.push({value: id, label: label, exit_code: solution.exit_code, public: solution.public})
         }
         return res
     }
@@ -51,8 +51,8 @@
     function transformTestsForSelect(tests) {
         let res = []
         for (const [id, test] of Object.entries(tests)) {
-            let label = `${test.name === "" ? "" : test.name + " - "}${test.date}${test.final === true ? "" : " ✔ "}${test.public === true ? "(public)" : ""}`
-            res.push({value: id, label: label})
+            let label = `${test.name === "" ? "" : test.name + " - "}${test.date}${test.final === true ? " ✔ " : ""}${test.public === true ? "(public)" : ""}`
+            res.push({value: id, label: label, final: test.final, pubic: test.public})
         }
         return res
     }
@@ -138,18 +138,11 @@
     }
 </script>
 
-<div class="small-margin" style="margin-bottom: -2%">
-    <div class="language-selector">
-        <label for="language{language.number}-picker-select"><b>{language.number === 1 ? "First" : "Second"}
-            language:</b></label>
-        <Select id="language{language.number}-picker-select" items={transformLanguagesForSelector(initValues.languages)}
-                on:select={changeLanguage} on:clear={() => hideLanguage(language.number)}
-                isClearable={!(isSecondLanguageIsSelected && language.number === 1)}/>
-    </div>
+<div style="max-width: {language.solutionsAndTestsSelector.show ? '100' : '20'}%">
+    <label for="language{language.number}-picker-select" class="no-wrap"><b>{language.number === 1 ? "First" : "Second"}
+        language:</b></label>
+    <Select id="language{language.number}-picker-select"
+            items={transformLanguagesForSelector(initValues.languages)}
+            on:select={changeLanguage} on:clear={() => hideLanguage(language.number)}
+            isClearable={!(isSecondLanguageIsSelected && language.number === 1)}/>
 </div>
-
-<style>
-    .language-selector {
-        max-width: 20%;
-    }
-</style>
