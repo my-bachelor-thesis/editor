@@ -8,9 +8,7 @@
     const toggle = () => (isOpened = !isOpened)
 </script>
 
-<div class="grid-button">
-    <Button color="secondary" size="sm" on:click={toggle}>Change name</Button>
-</div>
+<Button color="primary" size="sm" on:click={toggle}>Change name</Button>
 
 <Modal isOpen={isOpened} {toggle}>
     <ModalHeader {toggle}>Change name</ModalHeader>

@@ -4,6 +4,8 @@
     import * as helpers from "../../helpers"
     import {tick} from "svelte";
     import Select from "svelte-select";
+    import {Col} from "sveltestrap";
+    import HelpMessage from "../messages/HelpMessage.svelte";
 
     export let language, initValues, taskId, url, selectedSolutionStore, selectedTestStore, isSecondLanguageIsSelected
 
@@ -138,11 +140,17 @@
     }
 </script>
 
-<div style="max-width: {language.solutionsAndTestsSelector.show ? '100' : '20'}%">
-    <label for="language{language.number}-picker-select" class="no-wrap"><b>{language.number === 1 ? "First" : "Second"}
-        language:</b></label>
-    <Select id="language{language.number}-picker-select"
-            items={transformLanguagesForSelector(initValues.languages)}
-            on:select={changeLanguage} on:clear={() => hideLanguage(language.number)}
-            isClearable={!(isSecondLanguageIsSelected && language.number === 1)}/>
-</div>
+<Col>
+    <div style="max-width: {language.solutionsAndTestsSelector.show ? '100' : '20'}%">
+        <label for="language{language.number}-picker-select"
+               class="no-wrap"><b>{language.number === 1 ? "First" : "Second"}
+            language:</b></label>
+
+        <HelpMessage text="select a language for which you want to show available solutions and tests"/>
+
+        <Select id="language{language.number}-picker-select"
+                items={transformLanguagesForSelector(initValues.languages)}
+                on:select={changeLanguage} on:clear={() => hideLanguage(language.number)}
+                isClearable={!(isSecondLanguageIsSelected && language.number === 1)}/>
+    </div>
+</Col>

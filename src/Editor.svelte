@@ -11,6 +11,7 @@
     import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte"
     import {GridStyleStore} from "./partial_components/editor/gridstyle";
     import {SelectedSolutionStore, SelectedTestStore} from "./partial_components/editor/selected";
+    import {Row} from "sveltestrap";
 
     // variables //
 
@@ -214,7 +215,7 @@
         <!-- language 1 -->
         <hr>
 
-        <div class="one-row-grid">
+        <Row>
 
             <LanguageSelector
                     bind:language={language1}
@@ -239,11 +240,11 @@
 
             {/if}
 
-        </div>
+        </Row>
 
         <!--         language 2 -->
         {#if language1.solutionsAndTestsSelector.show}
-            <div class="one-row-grid">
+            <Row>
 
                 <LanguageSelector
                         bind:language={language2}
@@ -266,7 +267,7 @@
                     />
                 {/if}
 
-            </div>
+            </Row>
         {/if}
 
         <br>
@@ -313,9 +314,4 @@
 <!---------------------------------------- styles ---------------------------------------->
 
 <style>
-    .one-row-grid {
-        display: grid;
-        gap: 1rem;
-        grid-auto-flow: column;
-    }
 </style>

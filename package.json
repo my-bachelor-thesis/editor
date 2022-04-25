@@ -31,6 +31,8 @@
     "svelte-navigator": "^3.1.5",
     "svelte-quill": "^1.2.0",
     "svelte-select": "^4.4.7",
+    "svelte-tooltip": "^1.2.0",
+    "sveltejs-tippy": "^3.0.0",
     "sveltestrap": "^5.9.0"
   }
 }
