@@ -119,14 +119,14 @@
         language.solutionsAndTestsSelector.promise.then((data) => {
             language.solutionsAndTestsSelector.solutions = data.solutions
             language.solutionsAndTestsSelector.tests = data.tests
+            // TODO: zorad podla datumu vzostupne
             if (Object.keys(language.solutionsAndTestsSelector.solutions).length > 0) {
-                language.solutionsAndTestsSelector.solutionsForSelect = transformSolutionsForSelect(language.solutionsAndTestsSelector.solutions)
-                // TODO: zorad podla datumu vzostupne
-                selectedSolutionStore.value.set(language.solutionsAndTestsSelector.solutionsForSelect[0])
+                language.solutionsAndTestsSelector.solutions = transformSolutionsForSelect(language.solutionsAndTestsSelector.solutions)
+                selectedSolutionStore.value.set(language.solutionsAndTestsSelector.solutions[0])
             }
             if (Object.keys(language.solutionsAndTestsSelector.tests).length > 0) {
-                language.solutionsAndTestsSelector.testsForSelect = transformTestsForSelect(language.solutionsAndTestsSelector.tests)
-                selectedTestStore.value.set(language.solutionsAndTestsSelector.testsForSelect[0])
+                language.solutionsAndTestsSelector.tests = transformTestsForSelect(language.solutionsAndTestsSelector.tests)
+                selectedTestStore.value.set(language.solutionsAndTestsSelector.tests[0])
             }
         })
     }

@@ -4,8 +4,10 @@
     import {GridStyleStore} from "./gridstyle";
     import Select from "svelte-select";
     import HelpMessage from "../messages/HelpMessage.svelte";
+    import {get} from "svelte/store";
+    import {tick} from "svelte";
 
-    export let language, url, testResultsCache, paringFunction, selectedSolutionStore, selectedTestStore
+    export let language, selectedSolutionStore, selectedTestStore, filters
 
     function minimizeMaximizeFunc(index) {
         let elementType = index % 2 === 0 ? "solution" : "test"
@@ -23,6 +25,32 @@
             editor.style.display = "none"
         }
     }
+
+    function solutionsThatDidntFail() {
+        return language.solutionsAndTestsSelector.solutions.filter(solution => solution.exit_code === 0)
+    }
+
+    function finalTests() {
+        return language.solutionsAndTestsSelector.tests.filter(test => test.final === true)
+    }
+
+    $: if (filters.showNotFailedSolutions) {
+        if (get(selectedSolutionStore).exit_code !== 0) {
+            (async () => {
+                await tick()
+                selectedSolutionStore.value.set(language.solutionsAndTestsSelector.solutions[0])
+            })()
+        }
+    }
+
+    $: if (filters.showFinalTests) {
+        if (!get(selectedTestStore).final) {
+            (async () => {
+                await tick()
+                selectedTestStore.value.set(language.solutionsAndTestsSelector.tests[0])
+            })()
+        }
+    }
 </script>
 
 
@@ -34,7 +62,7 @@
         <label for="solution{language.number}-picker-select" class="no-wrap"><b>Select from solutions:</b></label>
         <HelpMessage text="select a solution from available solutions"/>
         <Select id="solution{language.number}-picker-select"
-                items={language.solutionsAndTestsSelector.solutionsForSelect}
+                items={filters.showNotFailedSolutions ? solutionsThatDidntFail(language.solutionsAndTestsSelector.solutions) : language.solutionsAndTestsSelector.solutions}
                 bind:value={$selectedSolutionStore} isClearable={false}/>
     </Col>
 
@@ -52,7 +80,8 @@
     <Col class="solutions-and-tests-selector">
         <label for="test{language.number}-picker-select" class="no-wrap"><b>Select from tests:</b></label>
         <HelpMessage text="select a test from available tests"/>
-        <Select id="test{language.number}-picker-select" items={language.solutionsAndTestsSelector.testsForSelect}
+        <Select id="test{language.number}-picker-select"
+                items={filters.showFinalTests ? finalTests(language.solutionsAndTestsSelector.tests) : language.solutionsAndTestsSelector.tests}
                 bind:value={$selectedTestStore} isClearable={false}/>
     </Col>
 

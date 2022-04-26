@@ -32,10 +32,8 @@
     function SolutionsAndTests() {
         this.show = false
         this.promise = Promise.resolve([])
-        this.tests = {}
-        this.testsForSelect = []
-        this.solutions = {}
-        this.solutionsForSelect = []
+        this.tests = []
+        this.solutions = []
     }
 
     function Cache() {
@@ -231,11 +229,9 @@
 
                 <SolutionsAndTestsSelector
                         bind:language={language1}
-                        url={url}
-                        testResultsCache={testResultsCache}
-                        paringFunction={paringFunction}
                         selectedSolutionStore={selectedSolutionLanguage1Store}
                         selectedTestStore={selectedTestLanguage1Store}
+                        filters={filters}
                 />
 
             {/if}
@@ -259,11 +255,9 @@
                 {#if language2.solutionsAndTestsSelector.show}
                     <SolutionsAndTestsSelector
                             bind:language={language2}
-                            url={url}
-                            testResultsCache={testResultsCache}
-                            paringFunction={paringFunction}
                             selectedSolutionStore={selectedSolutionLanguage2Store}
                             selectedTestStore={selectedTestLanguage2Store}
+                            filters={filters}
                     />
                 {/if}
 
