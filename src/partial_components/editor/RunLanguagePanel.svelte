@@ -1,97 +1,88 @@
 <script>
     import ShowResult from "./ShowResult.svelte"
-    import {tick} from "svelte";
+    import * as helpers from "../../helpers"
+    import md5 from 'blueimp-md5';
+    import {get} from "svelte/store";
 
-    export let language, url, taskId, testResultsCache, paringFunction
+    // TODO: use paringFunction
+    export let language, url, taskId, paringFunction, selectedSolutionStore, selectedTestStore
 
-    async function fetchTestResults(solution, solutionId, test, testId, lang, urlParam) {
-        const res = await fetch(`${url}/${urlParam}/${lang}`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                solution: solution,
-                solution_id: parseInt(solutionId),
-                test: test,
-                test_id: parseInt(testId),
-                task_id: parseInt(taskId)
-            })
+    async function fetchTestResults(solution, test, urlParam) {
+        let body = JSON.stringify({
+            solution: solution,
+            solution_id: parseInt(get(selectedSolutionStore.value).value),
+            test: test,
+            test_id: parseInt(get(selectedTestStore.value).value),
+            task_id: parseInt(taskId)
         })
-        const data = await res.json()
-        if (res.ok) {
-            return data
-        } else {
-            throw new Error(data)
-        }
+        return helpers.postJson(`${url}/${urlParam}/${language.name}`, body)
+    }
+
+    function insertNewSolutionIntoSelector(solutionHash, data) {
+        language.cache.solutionFromLastRun = solutionHash
+        let solution = new Map([[data.solution.id, data.solution]])
+        let transformedSolution = helpers.transformSolutionsForSelect(solution)[0]
+        selectedSolutionStore.value.set(transformedSolution)
+        language.solutionsAndTestsSelector.solutions.push(transformedSolution)
+    }
+
+    function insertNewTestIntoSelector(testHash, data) {
+        language.cache.testFromLastRun = testHash
+        let test = new Map([[data.test_id, {
+            name: "",
+            last_modified: data.test_last_modified,
+            final: false,
+            public: false
+        }]])
+        let transformedTest = helpers.transformTestsForSelect(test)[0]
+        selectedTestStore.value.set(transformedTest)
+        language.solutionsAndTestsSelector.tests.push(transformedTest)
     }
 
     function runTest() {
         language.infoBoxContent = []
 
         let solutionInEditor = language.editors.solution.state.doc.toString()
+        let solutionInEditorHash = md5(solutionInEditor)
         let testInEditor = language.editors.test.state.doc.toString()
+        let testInEditorHash = md5(testInEditor)
 
-        if (language.testResult.show && language.cache.solutionFromLastRun === solutionInEditor && testInEditor === language.cache.testFromLastRun) {
+        if (language.testResult.show && language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
             language.infoBoxContent.push("nothing changed, not running")
             return
         }
 
-        if (language.cache.solutionFromLastRun !== solutionInEditor && testInEditor !== language.cache.testFromLastRun) {
+        language.testResult.show = true
+
+        if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
             language.infoBoxContent.push("saving solution, test and running")
-            language.testResult.promise = fetchTestResults(solutionInEditor, language.solutionsAndTestsSelector.selectedSolution, testInEditor, language.solutionsAndTestsSelector.selectedTest, language.name, "test-and-save-solution")
-            language.testResult.promise.then(async (data) => {
-                language.cache.solutionFromLastRun = solutionInEditor
-                language.solutionsAndTestsSelector.selectedSolution = data.solution.id
-                language.cache.solutions[data.solution.id] = {
-                    'date': data.solution.last_modified,
-                    'exit_code': data.solution.exit_code
-                }
-                await tick()
-                document.getElementById("solution1-picker-select").value = data.solution.id
 
-                language.cache.testFromLastRun = testInEditor
-                language.solutionsAndTestsSelector.selectedTest = data.test_id
-                language.cache.tests[data.test_id] = {'date': data.test_last_modified, 'final': false}
-                await tick()
-                document.getElementById("test1-picker-select").value = data.test_id
+            language.solutionsAndTestsSelector.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both")
+
+            language.solutionsAndTestsSelector.promise.then(data => {
+                insertNewSolutionIntoSelector(solutionInEditorHash, data)
+                insertNewTestIntoSelector(testInEditorHash, data)
             })
-
-        } else if (language.cache.solutionFromLastRun !== solutionInEditor && testInEditor === language.cache.testFromLastRun) {
+        } else if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
             language.infoBoxContent.push("saving solution and running")
-            language.testResult.promise = fetchTestResults(solutionInEditor, language.solutionsAndTestsSelector.selectedSolution, testInEditor, language.solutionsAndTestsSelector.selectedTest, language.name, "test-and-save-both")
-            language.testResult.promise.then(async (data) => {
-                language.cache.solutionFromLastRun = solutionInEditor
-                language.solutionsAndTestsSelector.selectedSolution = data.solution.id
-                language.cache.solutions[data.solution.id] = {
-                    'date': data.solution.last_modified,
-                    'exit_code': data.solution.exit_code
-                }
-                await tick()
-                document.getElementById("solution1-picker-select").value = data.solution.id
+
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-solution")
+
+            language.testResult.promise.then(data => {
+                insertNewSolutionIntoSelector(solutionInEditorHash, data)
             })
 
-        } else if (language.cache.solutionFromLastRun === solutionInEditor && testInEditor !== language.cache.testFromLastRun) {
+        } else if (language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
             language.infoBoxContent.push("saving test and running")
-            language.testResult.promise = fetchTestResults(solutionInEditor, language.solutionsAndTestsSelector.selectedSolution, testInEditor, language.solutionsAndTestsSelector.selectedTest, language.name, "test-and-save-test")
-            language.testResult.promise.then(async (data) => {
-                language.cache.testFromLastRun = testInEditor
-                language.solutionsAndTestsSelector.selectedTest = data.test_id
-                language.cache.tests[data.test_id] = {'date': data.test_last_modified, 'final': false}
-                await tick()
-                document.getElementById("test1-picker-select").value = data.test_id
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-test")
+            language.testResult.promise.then(data => {
+                insertNewTestIntoSelector(testInEditorHash, data)
             })
 
         } else {
             language.infoBoxContent.push("running")
-            language.testResult.promise = fetchTestResults(solutionInEditor, language.solutionsAndTestsSelector.selectedSolution, testInEditor, language.solutionsAndTestsSelector.selectedTest, language.name, "test")
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test")
         }
-
-        language.testResult.show = true
-        language.testResult.promise.then((res) => {
-            testResultsCache.set(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest), res)
-        })
     }
 
 </script>

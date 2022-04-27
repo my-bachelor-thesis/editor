@@ -41,24 +41,6 @@
         }
     }
 
-    function transformSolutionsForSelect(solutions) {
-        let res = []
-        for (const [id, solution] of Object.entries(solutions)) {
-            let label = `${solution.name === "" ? "" : solution.name + " - "}${solution.date}${solution.exit_code === 0 ? "" : " ❌ "}${solution.public === true ? "(public)" : ""}`
-            res.push({value: id, label: label, exit_code: solution.exit_code, public: solution.public})
-        }
-        return res
-    }
-
-    function transformTestsForSelect(tests) {
-        let res = []
-        for (const [id, test] of Object.entries(tests)) {
-            let label = `${test.name === "" ? "" : test.name + " - "}${test.date}${test.final === true ? " ✔ " : ""}${test.public === true ? "(public)" : ""}`
-            res.push({value: id, label: label, final: test.final, pubic: test.public})
-        }
-        return res
-    }
-
     function changeLanguage(event) {
         language.name = event.detail.value
 
@@ -121,11 +103,11 @@
             language.solutionsAndTestsSelector.tests = data.tests
             // TODO: zorad podla datumu vzostupne
             if (Object.keys(language.solutionsAndTestsSelector.solutions).length > 0) {
-                language.solutionsAndTestsSelector.solutions = transformSolutionsForSelect(language.solutionsAndTestsSelector.solutions)
+                language.solutionsAndTestsSelector.solutions = helpers.transformSolutionsForSelect(language.solutionsAndTestsSelector.solutions)
                 selectedSolutionStore.value.set(language.solutionsAndTestsSelector.solutions[0])
             }
             if (Object.keys(language.solutionsAndTestsSelector.tests).length > 0) {
-                language.solutionsAndTestsSelector.tests = transformTestsForSelect(language.solutionsAndTestsSelector.tests)
+                language.solutionsAndTestsSelector.tests = helpers.transformTestsForSelect(language.solutionsAndTestsSelector.tests)
                 selectedTestStore.value.set(language.solutionsAndTestsSelector.tests[0])
             }
         })

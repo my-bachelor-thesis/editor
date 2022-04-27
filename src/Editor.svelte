@@ -19,15 +19,13 @@
 
     let isSecondLanguageIsSelected = false
 
-    const taskId = new URLSearchParams(window.location.search).get('id')
+    const taskId = new URLSearchParams(window.location.search).get("id")
     let initValues = getInitValues()
 
     let filters = {
         showNotFailedSolutions: false,
         showFinalTests: false,
     }
-
-    let testResultsCache = new Map()
 
     function SolutionsAndTests() {
         this.show = false
@@ -71,8 +69,8 @@
 
     // helper functions //
 
-    function paringFunction(a, b) {
-        return a + "," + b
+    function paringFunction(solutionHash, testHash) {
+        return solutionHash + "," + testHash
     }
 
     function languageToCodemirrorFunction(language) {
@@ -95,25 +93,12 @@
         return helpers.fetchJson(`${url}/code-of-solution/${id}`)
     }
 
-    // function loadResultFromCache(language) {
-    //     if (testResultsCache.has(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest))) {
-    //         language.testResult.show = true
-    //         language.testResult.promise = new Promise((resolve, _) => {
-    //             resolve(testResultsCache.get(paringFunction(language.solutionsAndTestsSelector.selectedSolution, language.solutionsAndTestsSelector.selectedTest)))
-    //         })
-    //         language.testResult.promise.then((res) => {
-    //             console.log(res)
-    //         })
-    //     }
-    // }
-
     function insertSelectedSolutionIntoEditor(language, selected) {
         if (selected === undefined) {
             return
         }
         language.infoBoxContent = []
         language.testResult.show = false
-        // loadResultFromCache(language)
         fetchCodeOfSolution(selected.value).then((data) => {
             let code = data.code
             language.editors.solution.dispatch({
@@ -290,8 +275,9 @@
         language={language1}
         url={url}
         taskId={taskId}
-        testResultsCache={testResultsCache}
         paringFunction={paringFunction}
+        selectedSolutionStore={selectedSolutionLanguage1Store}
+        selectedTestStore={selectedTestLanguage1Store}
 />
 
 <!-- test results 2 -->
@@ -300,12 +286,7 @@
         language={language2}
         url={url}
         taskId={taskId}
-        testResultsCache={testResultsCache}
         paringFunction={paringFunction}
+        selectedSolutionStore={selectedSolutionLanguage2Store}
+        selectedTestStore={selectedTestLanguage2Store}
 />
-
-
-<!---------------------------------------- styles ---------------------------------------->
-
-<style>
-</style>

@@ -25,6 +25,7 @@
     "@codemirror/stream-parser": "^0.19.6",
     "@codemirror/view": "^0.19.45",
     "@smui/chips": "^6.0.0-beta.14",
+    "blueimp-md5": "^2.19.0",
     "sirv-cli": "^2.0.2",
     "split-grid": "^1.0.11",
     "svelte-forms-lib": "^2.0.1",

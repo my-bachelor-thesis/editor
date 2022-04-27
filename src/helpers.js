@@ -32,13 +32,20 @@ export async function postJson(url, content) {
         body: content
     })
 
-    if (!res.ok) {
-        let data = await res.json()
-        if (res.status === 500) {
-            data = "internal server error"
-        }
-        throw new Error(data)
+    let data
+    try {
+        data = await res.json()
+    } catch (_) {
     }
+
+    if (res.ok) {
+        return data
+    }
+
+    if (res.status === 500) {
+        data = "internal server error"
+    }
+    throw new Error(data)
 }
 
 export function redirectToHomeWithMessage(msg) {
@@ -136,4 +143,40 @@ export function languageName(lang) {
         case "cpp":
             return "C++"
     }
+}
+
+function getIteratorForTransform(obj) {
+    let iterator
+    if (obj instanceof Map) {
+        iterator = obj.entries()
+    } else {
+        iterator = Object.entries(obj)
+    }
+    return iterator
+}
+
+// solutions can be a map or an object
+export function transformSolutionsForSelect(solutions) {
+    let res = []
+
+    let iterator = getIteratorForTransform(solutions)
+
+    for (const [id, solution] of iterator) {
+        let label = `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.exit_code === 0 ? "" : " ❌ "}${solution.public === true ? "(public)" : ""}`
+        res.push({value: id, label: label, exit_code: solution.exit_code, public: solution.public})
+    }
+    return res
+}
+
+// tests can be a map or an object
+export function transformTestsForSelect(tests) {
+    let res = []
+
+    let iterator = getIteratorForTransform(tests)
+
+    for (const [id, test] of iterator) {
+        let label = `${test.name === "" ? "" : test.name + " - "}${test.last_modified}${test.final === true ? " ✔ " : ""}${test.public === true ? "(public)" : ""}`
+        res.push({value: id, label: label, final: test.final, pubic: test.public})
+    }
+    return res
 }
