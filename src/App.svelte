@@ -1,20 +1,12 @@
 <script>
-    import {Router, Route, Link} from "svelte-navigator"
+    import {Link, Route, Router} from "svelte-navigator"
     import Login from "./Login.svelte"
     import Register from "./Register.svelte"
     import Home from "./Home.svelte"
     import Editor from "./Editor.svelte"
     import AddTask from "./AddTask.svelte"
     import Logout from "./Logout.svelte"
-    import {
-        Collapse,
-        Navbar,
-        NavbarToggler,
-        NavbarBrand,
-        Nav,
-        NavItem,
-        NavLink,
-    } from 'sveltestrap';
+    import {Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink,} from 'sveltestrap';
     import * as store from "./store"
     import * as helpers from "./helpers"
     import NotPublished from "./Publish.svelte"
@@ -40,7 +32,8 @@
 <Router>
     <Navbar color="light" light expand="md">
         <NavbarBrand>
-            <Link to="/">Home</Link>
+            <img id="navbar-img" height="auto" src="images/navbar-logo.png" class="d-inline-block align-top"
+                 alt="navbar logo">
         </NavbarBrand>
         <NavbarToggler on:click={() => (isOpen = !isOpen)}/>
         <Collapse {isOpen} navbar expand="md" on:update={handleOpen}>
@@ -49,13 +42,13 @@
                 {#if isAdmin}
                     <NavItem>
                         <NavLink>
-                            <Link to="add-task">Add task</Link>
+                            <Link to="add-task"><span class="navbar-text">Add task</span></Link>
                         </NavLink>
                     </NavItem>
 
                     <NavItem>
                         <NavLink>
-                            <Link to="approve">Tasks to approve</Link>
+                            <Link to="approve"><span class="navbar-text">Tasks to approve</span></Link>
                         </NavLink>
                     </NavItem>
                 {/if}
@@ -63,37 +56,37 @@
                 {#if username === ""}
                     <NavItem>
                         <NavLink>
-                            <Link to="login">Login</Link>
+                            <Link to="login"><span class="navbar-text">Login</span></Link>
                         </NavLink>
                     </NavItem>
 
                     <NavItem>
                         <NavLink>
-                            <Link to="register">Register</Link>
+                            <Link to="register"><span class="navbar-text">Register</span></Link>
                         </NavLink>
                     </NavItem>
                 {:else}
                     <NavItem>
                         <NavLink>
-                            <Link to="not-published">Not published</Link>
+                            <Link to="not-published"><span class="navbar-text">Not published</span></Link>
                         </NavLink>
                     </NavItem>
 
                     <NavItem>
                         <NavLink>
-                            <Link to="account-settings">Account settings</Link>
+                            <Link to="account-settings"><span class="navbar-text">Account settings</span></Link>
                         </NavLink>
                     </NavItem>
 
                     <NavItem>
                         <NavLink>
-                            <Link to="logout">Logout</Link>
+                            <Link to="logout"><span class="navbar-text">Logout</span></Link>
                         </NavLink>
                     </NavItem>
 
                     <NavItem>
                         <NavLink style="pointer-events: none;">
-                            <div><b>Logged in as {username}</b></div>
+                            <div>Logged in as {username}</div>
                         </NavLink>
                     </NavItem>
                 {/if}
@@ -139,5 +132,20 @@
         </Route>
     </main>
 </Router>
+
+<style>
+    #navbar-img {
+        height: auto;
+        width: auto;
+        max-height: 40px;
+    }
+
+    .navbar-text {
+        font-size: large;
+        font-weight: bold;
+        white-space: nowrap;
+        color: #0050A0 !important;
+    }
+</style>
 
 <!--<footer>Ján Kelemen 2022</footer>-->
