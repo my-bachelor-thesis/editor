@@ -3,6 +3,7 @@
     import * as helpers from "../../helpers"
     import md5 from 'blueimp-md5';
     import {get} from "svelte/store";
+    import {Accordion, AccordionItem} from 'sveltestrap';
 
     // TODO: use paringFunction
     export let language, url, taskId, paringFunction, selectedSolutionStore, selectedTestStore
@@ -50,7 +51,7 @@
         language.testResult.show = true
 
         if (language.cache.solutionFromLastRun === null || language.cache.testFromLastRun === null) {
-            language.infoBoxContent.push("running")
+            language.infoBoxContent.push("running, nothing to save")
             language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test")
             language.cache.solutionFromLastRun = solutionInEditorHash
             language.cache.testFromLastRun = testInEditorHash
@@ -84,23 +85,28 @@
 </script>
 
 {#if language.name}
-    <div id="test-result-{language.number}">
-        <button type="button" on:click={runTest}>
-            Run {language.number}. language
-        </button>
+    <Accordion stayOpen>
+        <div id="test-result-{language.number}">
+            <button type="button" on:click={runTest}>
+                Run {language.number}. language
+            </button>
 
-        <br><br>
-        <!-- info box -->
-        <div class="info-box">
-            {#each language.infoBoxContent as line}
-                {line}<br>
-            {/each}
+            <br><br>
+
+            {#if language.testResult.show}
+                <AccordionItem header="Status">
+                    <div>
+                        {#each language.infoBoxContent as line}
+                            {line}<br>
+                        {/each}
+                    </div>
+                </AccordionItem>
+            {/if}
+
+            <ShowResult showTestResult={language.testResult.show}
+                        promiseResult={language.testResult.promise}/>
         </div>
-        <br>
-
-        <ShowResult showTestResult={language.testResult.show}
-                    promiseResult={language.testResult.promise}/>
-    </div>
+    </Accordion>
 {/if}
 
 <style>
@@ -111,6 +117,6 @@
 
     :global(#test-result-2) {
         float: right;
-        width: 45%;
+        width: 50%;
     }
 </style>
