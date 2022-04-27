@@ -47,19 +47,21 @@
         let testInEditor = language.editors.test.state.doc.toString()
         let testInEditorHash = md5(testInEditor)
 
-        if (language.testResult.show && language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
-            language.infoBoxContent.push("nothing changed, not running")
-            return
-        }
-
         language.testResult.show = true
 
-        if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
+        if (language.cache.solutionFromLastRun === null || language.cache.testFromLastRun === null) {
+            language.infoBoxContent.push("running")
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test")
+            language.cache.solutionFromLastRun = solutionInEditorHash
+            language.cache.testFromLastRun = testInEditorHash
+        } else if (language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
+            language.infoBoxContent.push("nothing changed, not running")
+        } else if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
             language.infoBoxContent.push("saving solution, test and running")
 
-            language.solutionsAndTestsSelector.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both")
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both")
 
-            language.solutionsAndTestsSelector.promise.then(data => {
+            language.testResult.promise.then(data => {
                 insertNewSolutionIntoSelector(solutionInEditorHash, data)
                 insertNewTestIntoSelector(testInEditorHash, data)
             })
@@ -71,20 +73,14 @@
             language.testResult.promise.then(data => {
                 insertNewSolutionIntoSelector(solutionInEditorHash, data)
             })
-
-        } else if (language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
+        } else {
             language.infoBoxContent.push("saving test and running")
             language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-test")
             language.testResult.promise.then(data => {
                 insertNewTestIntoSelector(testInEditorHash, data)
             })
-
-        } else {
-            language.infoBoxContent.push("running")
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test")
         }
     }
-
 </script>
 
 {#if language.name}
@@ -102,7 +98,8 @@
         </div>
         <br>
 
-        <ShowResult showTestResult={language.testResult.show} promiseResult={language.testResult.promise}/>
+        <ShowResult showTestResult={language.testResult.show}
+                    promiseResult={language.testResult.promise}/>
     </div>
 {/if}
 

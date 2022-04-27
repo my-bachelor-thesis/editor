@@ -35,8 +35,8 @@
     }
 
     function Cache() {
-        this.testFromLastRun = ""
-        this.solutionFromLastRun = ""
+        this.testFromLastRun = null
+        this.solutionFromLastRun = null
     }
 
     function Editors() {
@@ -100,11 +100,9 @@
         language.infoBoxContent = []
         language.testResult.show = false
         fetchCodeOfSolution(selected.value).then((data) => {
-            let code = data.code
             language.editors.solution.dispatch({
-                changes: {from: 0, to: language.editors.solution.state.doc.length, insert: code}
+                changes: {from: 0, to: language.editors.solution.state.doc.length, insert: data.code}
             })
-            language.cache.solutionFromLastRun = code
         })
     }
 
@@ -114,13 +112,10 @@
         }
         language.infoBoxContent = []
         language.testResult.show = false
-        // loadResultFromCache(language)
         fetchCodeOfTest(selected.value).then((data) => {
-            let code = data.code
             language.editors.test.dispatch({
-                changes: {from: 0, to: language.editors.test.state.doc.length, insert: code}
+                changes: {from: 0, to: language.editors.test.state.doc.length, insert: data.code}
             })
-            language.cache.testFromLastRun = code
         })
     }
 
