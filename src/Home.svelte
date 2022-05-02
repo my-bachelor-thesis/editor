@@ -13,6 +13,12 @@
 
 <SuccessMessage msg={message}/>
 
+<div id="logo-home-center">
+    <h1>My bachelor's thesis</h1>
+    <!--    TODO: dynamic height-->
+    <img src="images/logo-white.png" alt="" height="100px">
+</div>
+
 {#await tasksPromise}
     <p>Loading tasks...</p>
 {:then tasks}
@@ -32,3 +38,15 @@
 {:catch error}
     <p style="color: red">{error.message}</p>
 {/await}
+
+<style>
+    #logo-home-center {
+        align-content: center;
+        text-align: center;
+        margin: 4%;
+    }
+    #logo-home-center h1 {
+        font-weight: bold;
+        margin-bottom: 2%;
+    }
+</style>

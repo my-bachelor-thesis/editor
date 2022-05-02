@@ -30,13 +30,14 @@
 </script>
 
 <Router>
-    <Navbar color="light" light expand="md">
+    <Navbar color="light" light expand="xl">
         <NavbarBrand>
-            <img id="navbar-img" height="auto" src="images/navbar-logo.png" class="d-inline-block align-top"
+            <img id="navbar-img" height="auto" src="images/logo-navbar.png" class="d-xl-inline d-none"
                  alt="navbar logo">
+            <Link to="add-task"><span class="navbar-home">My bachelor's theses</span></Link>
         </NavbarBrand>
         <NavbarToggler on:click={() => (isOpen = !isOpen)}/>
-        <Collapse {isOpen} navbar expand="md" on:update={handleOpen}>
+        <Collapse {isOpen} navbar expand="xl" on:update={handleOpen}>
             <Nav class="ms-auto" navbar>
 
                 {#if isAdmin}
@@ -145,6 +146,18 @@
         font-weight: bold;
         white-space: nowrap;
         color: #0050A0 !important;
+    }
+
+    .navbar-home {
+        margin-left: 3%;
+        font-size: x-large;
+        font-weight: bold;
+        white-space: nowrap;
+        color: #0050A0 !important;
+    }
+
+    :global(.navbar-brand) {
+        padding: 0px !important;
     }
 </style>
 
