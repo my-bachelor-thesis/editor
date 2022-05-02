@@ -1,5 +1,6 @@
 <script>
     import {GridStyleStore} from "./gridstyle"
+    import {Card, CardBody} from "sveltestrap";
 
     export let initValues, language1, language2
 
@@ -14,7 +15,9 @@
     {:then res}
         <div>
             <div class="editor-label">Description</div>
-            {@html res.text}
+            <Card>
+                <CardBody>{@html res.text}</CardBody>
+            </Card>
         </div>
     {:catch error}
         <div style="color: red">{error.message}</div>

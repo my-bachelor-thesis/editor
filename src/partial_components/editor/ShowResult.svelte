@@ -29,7 +29,7 @@
                     <p>max ram usage: {res.solution.max_ram_usage} mb</p>
                     <p>binary size: {res.solution.binary_size} mb</p>
                 </AccordionItem>
-                <TestOutput output={res.solution.output}></TestOutput>
+                <TestOutput output={res.solution.output} active></TestOutput>
             {/if}
         {/if}
     {:catch error}
