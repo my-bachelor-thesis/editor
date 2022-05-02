@@ -11,7 +11,7 @@
     import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte"
     import {GridStyleStore} from "./partial_components/editor/gridstyle";
     import {SelectedSolutionStore, SelectedTestStore} from "./partial_components/editor/selected";
-    import {Row} from "sveltestrap";
+    import {Row, Tooltip} from "sveltestrap";
 
     // variables //
 
@@ -141,6 +141,9 @@
     selectedTestLanguage1Store.subscribe(val => insertSelectedTestIntoEditor(language1, val))
     selectedSolutionLanguage2Store.subscribe(val => insertSelectedSolutionIntoEditor(language2, val))
     selectedTestLanguage2Store.subscribe(val => insertSelectedTestIntoEditor(language2, val))
+
+    // title variable is used for title tooltip
+    let title
 </script>
 
 <!---------------------------------------- html starts here ---------------------------------------->
@@ -151,11 +154,19 @@
     {#await initValues}
         <p>Loading title...</p>
     {:then task}
-        <h1>{task.title}</h1><br>
-        <p><b>Difficulty: </b><span class="{task.difficulty}">{task.difficulty}</span></p>
-        <p><b>Added on:</b> {task.added_on}</p>
-        <p><b>Author:</b> {task.author}</p>
-        <p><b>Approver:</b> {task.approver}</p>
+        <div style="display: inline-block;" bind:this={title}>
+            <h1 style="white-space: nowrap;">{task.title}<span id="title-difficulty"
+                                                               class="{task.difficulty}">({task.difficulty})</span></h1>
+        </div>
+        <br>
+        <Tooltip target={title} placement="right">
+            <strong>Added on:</strong> {task.added_on}
+            <strong>Author:</strong> {task.author}
+            {#if get(store.isAdmin)}
+                <strong>Approver:</strong> {task.approver}
+            {/if}
+        </Tooltip>
+
     {:catch error}
         <p class="error-msg">{error.message}</p>
     {/await}
@@ -285,3 +296,11 @@
         selectedSolutionStore={selectedSolutionLanguage2Store}
         selectedTestStore={selectedTestLanguage2Store}
 />
+
+<style>
+    #title-difficulty {
+        /*vertical-align: super;*/
+        font-size: 70%;
+        margin-left: 3%;
+    }
+</style>
