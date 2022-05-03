@@ -155,6 +155,10 @@ function getIteratorForTransform(obj) {
     return iterator
 }
 
+export function makeSolutionLabel(solution) {
+    return `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.exit_code === 0 ? "" : " ❌ "}${solution.is_public ? "(public)" : ""}`
+}
+
 // solutions can be a map or an object
 export function transformSolutionsForSelect(solutions) {
     let res = []
@@ -162,10 +166,20 @@ export function transformSolutionsForSelect(solutions) {
     let iterator = getIteratorForTransform(solutions)
 
     for (const [id, solution] of iterator) {
-        let label = `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.exit_code === 0 ? "" : " ❌ "}${solution.public === true ? "(public)" : ""}`
-        res.push({value: id, label: label, exit_code: solution.exit_code, public: solution.public})
+        res.push({
+            value: id,
+            label: makeSolutionLabel(solution),
+            exit_code: solution.exit_code,
+            public: solution.public,
+            name: solution.name,
+            last_modified: solution.last_modified
+        })
     }
     return res
+}
+
+export function makeTestLabel(test) {
+    return `${test.name === "" ? "" : test.name + " - "}${test.last_modified}${test.final ? " ✔ " : ""}${test.public ? "(public)" : ""}`
 }
 
 // tests can be a map or an object
@@ -175,8 +189,14 @@ export function transformTestsForSelect(tests) {
     let iterator = getIteratorForTransform(tests)
 
     for (const [id, test] of iterator) {
-        let label = `${test.name === "" ? "" : test.name + " - "}${test.last_modified}${test.final === true ? " ✔ " : ""}${test.public === true ? "(public)" : ""}`
-        res.push({value: id, label: label, final: test.final, pubic: test.public})
+        res.push({
+            value: id,
+            label: makeTestLabel(test),
+            final: test.final,
+            pubic: test.public,
+            name: test.name,
+            last_modified: test.last_modified
+        })
     }
     return res
 }

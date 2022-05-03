@@ -67,7 +67,7 @@
     </Col>
 
     <Col xs="auto">
-        <ChangeNameButton id="changeSolution{language.number}Name"/>
+        <ChangeNameButton type="solution" bind:language={language} selectedStore={selectedSolutionStore}/>
 
         <div style="margin-top: 1%">
             <Button class="no-wrap" color="secondary" size="sm" on:click={() => minimizeMaximizeFunc(0)}>
@@ -87,7 +87,7 @@
 
 
     <Col xs="auto">
-        <ChangeNameButton id="changeTest{language.number}Name"/>
+        <ChangeNameButton type="test" bind:language={language} selectedStore={selectedTestStore}/>
 
         <div style="margin-top: 1%">
             <Button class="no-wrap" color="secondary" size="sm" on:click={() => minimizeMaximizeFunc(1)}>
