@@ -12,6 +12,7 @@
     import {GridStyleStore} from "./partial_components/editor/gridstyle";
     import {SelectedSolutionStore, SelectedTestStore} from "./partial_components/editor/selected";
     import {Row, Tooltip} from "sveltestrap";
+    import md5 from "blueimp-md5";
 
     // variables //
 
@@ -28,7 +29,6 @@
     }
 
     function SolutionsAndTests() {
-        this.show = false
         this.promise = Promise.resolve([])
         this.tests = []
         this.solutions = []
@@ -45,7 +45,6 @@
     }
 
     function TestResult() {
-        this.show = false
         this.promise = Promise.resolve([])
     }
 
@@ -69,10 +68,6 @@
 
     // helper functions //
 
-    function paringFunction(solutionHash, testHash) {
-        return solutionHash + "," + testHash
-    }
-
     function languageToCodemirrorFunction(language) {
         switch (language) {
             case 'go':
@@ -80,43 +75,6 @@
             case 'python':
                 return python()
         }
-
-    }
-
-    // insert code into editors
-
-    async function fetchCodeOfTest(id) {
-        return helpers.fetchJson(`${url}/code-of-test/${id}`)
-    }
-
-    async function fetchCodeOfSolution(id) {
-        return helpers.fetchJson(`${url}/code-of-solution/${id}`)
-    }
-
-    function insertSelectedSolutionIntoEditor(language, selected) {
-        if (selected === undefined) {
-            return
-        }
-        language.infoBoxContent = []
-        language.testResult.show = false
-        fetchCodeOfSolution(selected.value).then((data) => {
-            language.editors.solution.dispatch({
-                changes: {from: 0, to: language.editors.solution.state.doc.length, insert: data.code}
-            })
-        })
-    }
-
-    function insertSelectedTestIntoEditor(language, selected) {
-        if (selected === undefined) {
-            return
-        }
-        language.infoBoxContent = []
-        language.testResult.show = false
-        fetchCodeOfTest(selected.value).then((data) => {
-            language.editors.test.dispatch({
-                changes: {from: 0, to: language.editors.test.state.doc.length, insert: data.code}
-            })
-        })
     }
 
     // init values //
@@ -124,7 +82,6 @@
     async function getInitValues() {
         return helpers.fetchJson(`${url}/init-data/${taskId}`)
     }
-
 
     // reset gridstyle
 
@@ -137,13 +94,132 @@
     let selectedSolutionLanguage2Store = new SelectedSolutionStore()
     let selectedTestLanguage2Store = new SelectedTestStore()
 
-    selectedSolutionLanguage1Store.subscribe(val => insertSelectedSolutionIntoEditor(language1, val))
-    selectedTestLanguage1Store.subscribe(val => insertSelectedTestIntoEditor(language1, val))
-    selectedSolutionLanguage2Store.subscribe(val => insertSelectedSolutionIntoEditor(language2, val))
-    selectedTestLanguage2Store.subscribe(val => insertSelectedTestIntoEditor(language2, val))
+    // update last opened
+
+    function updateLastOpened() {
+        if (!get(selectedSolutionLanguage1Store)) {
+            return
+        }
+
+        let id1 = language1.name ? parseInt(get(selectedSolutionLanguage1Store).value) : 0
+        let id2 = 0
+        if (get(selectedSolutionLanguage2Store) && language2.name) {
+            id2 = parseInt(get(selectedSolutionLanguage2Store).value)
+        }
+
+        helpers.postJson(`${get(store.url)}/editor/change-last-opened`, JSON.stringify({
+            task_id: parseInt(taskId),
+            user_solution_id_for_language_1: id1,
+            language_1: language1.name,
+            user_solution_id_for_language_2: id2,
+            language_2: language2.name,
+        }))
+    }
 
     // title variable is used for title tooltip
+
     let title
+
+    // handling when solution changes
+
+    let showTestResultLanguage1 = false, showTestResultLanguage2 = false
+
+    async function fetchCodeOfSolution(id) {
+        return helpers.fetchJson(`${url}/code-of-solution/${id}`)
+    }
+
+    function insertSelectedSolutionIntoEditor(language, selected) {
+        if (selected === undefined) {
+            return
+        }
+        fetchCodeOfSolution(selected.value).then((data) => {
+            language.editors.solution.dispatch({
+                changes: {from: 0, to: language.editors.solution.state.doc.length, insert: data.code}
+            })
+            language.cache.solutionFromLastRun = md5(data.code)
+        })
+    }
+
+    function onSelectSolution(event, language, selectedTestStore, doUpdateLastOpened = true) {
+        if (language.dontHideTestResultWhileInsertingSolution) {
+            // don't ship again
+            language.dontHideTestResultWhileInsertingSolution = false
+        } else {
+            language.number === 1 ? showTestResultLanguage1 = false : showTestResultLanguage2 = false
+        }
+
+        if (doUpdateLastOpened) {
+            updateLastOpened()
+        }
+
+        insertSelectedSolutionIntoEditor(language, event)
+
+        if (!event.test_id) {
+            let index = language.solutionsAndTestsSelector.solutions.findIndex(x => x.value === event.value)
+            language.solutionsAndTestsSelector.solutions[index].test_id = get(selectedTestStore).value
+            updateTestId(event.value, get(selectedTestStore).value)
+        }
+
+        if (!get(selectedTestStore) || !event.test_id || get(selectedTestStore).value === event.test_id) {
+            return
+        }
+
+        let test = language.solutionsAndTestsSelector.tests.find(x => x.value === event.test_id)
+        if (test) {
+            selectedTestStore.set(test)
+        }
+    }
+
+
+    // handling when test changes
+
+    async function updateTestId(userSolutionId, testId) {
+        let body = JSON.stringify({
+            user_solution_id: parseInt(userSolutionId),
+            test_id: parseInt(testId)
+        })
+        return helpers.postJson(`${url}/editor/change-testid-for-usersolution`, body)
+    }
+
+
+    async function fetchCodeOfTest(id) {
+        return helpers.fetchJson(`${url}/code-of-test/${id}`)
+    }
+
+    function insertSelectedTestIntoEditor(language, selected) {
+        if (selected === undefined) {
+            return
+        }
+        fetchCodeOfTest(selected.value).then((data) => {
+            language.editors.test.dispatch({
+                changes: {from: 0, to: language.editors.test.state.doc.length, insert: data.code}
+            })
+            language.cache.testFromLastRun = md5(data.code)
+        })
+    }
+
+    function onSelectTest(event, language, selectedSolutionStore) {
+        if (language.dontHideTestResultWhileInsertingTest) {
+            // don't ship again
+            language.dontHideTestResultWhileInsertingTest = false
+        } else {
+            language.number === 1 ? showTestResultLanguage1 = false : showTestResultLanguage2 = false
+        }
+
+        insertSelectedTestIntoEditor(language, event)
+        if (!get(selectedSolutionStore) || get(selectedSolutionStore).test_id === event.value) {
+            return
+        }
+
+        let index = language.solutionsAndTestsSelector.solutions.findIndex(x => x.value === get(selectedSolutionStore).value)
+        language.solutionsAndTestsSelector.solutions[index].test_id = event.value
+
+        updateTestId(get(selectedSolutionStore).value, event.value)
+    }
+
+    // getting data about last opened solutions
+
+    let lastOpened = helpers.fetchJson(`${url}/editor/get-last-opened/${taskId}`)
 </script>
 
 <!---------------------------------------- html starts here ---------------------------------------->
@@ -173,7 +249,6 @@
 </div>
 
 {#if language1.solutionsAndTestsSelector.show}
-
     <hr>
 
     <fieldset class="small-margin">
@@ -214,6 +289,10 @@
                     selectedSolutionStore={selectedSolutionLanguage1Store}
                     selectedTestStore={selectedTestLanguage1Store}
                     bind:isSecondLanguageIsSelected={isSecondLanguageIsSelected}
+                    onSelectSolution={onSelectSolution}
+                    onSelectTest={onSelectTest}
+                    updateLastOpened={updateLastOpened}
+                    lastOpened={lastOpened}
             />
 
             {#if language1.solutionsAndTestsSelector.show}
@@ -223,6 +302,8 @@
                         selectedSolutionStore={selectedSolutionLanguage1Store}
                         selectedTestStore={selectedTestLanguage1Store}
                         filters={filters}
+                        onSelectSolution={onSelectSolution}
+                        onSelectTest={onSelectTest}
                 />
 
             {/if}
@@ -241,6 +322,10 @@
                         selectedSolutionStore={selectedSolutionLanguage2Store}
                         selectedTestStore={selectedTestLanguage2Store}
                         bind:isSecondLanguageIsSelected={isSecondLanguageIsSelected}
+                        onSelectSolution={onSelectSolution}
+                        onSelectTest={onSelectTest}
+                        updateLastOpened={updateLastOpened}
+                        lastOpened={lastOpened}
                 />
 
                 {#if language2.solutionsAndTestsSelector.show}
@@ -249,6 +334,8 @@
                             selectedSolutionStore={selectedSolutionLanguage2Store}
                             selectedTestStore={selectedTestLanguage2Store}
                             filters={filters}
+                            onSelectSolution={onSelectSolution}
+                            onSelectTest={onSelectTest}
                     />
                 {/if}
 
@@ -278,28 +365,27 @@
 <br>
 
 <RunLanguagePanel
-        language={language1}
+        bind:language={language1}
         url={url}
         taskId={taskId}
-        paringFunction={paringFunction}
         selectedSolutionStore={selectedSolutionLanguage1Store}
         selectedTestStore={selectedTestLanguage1Store}
+        bind:showTestResult={showTestResultLanguage1}
 />
 
 <!-- test results 2 -->
 
 <RunLanguagePanel
-        language={language2}
+        bind:language={language2}
         url={url}
         taskId={taskId}
-        paringFunction={paringFunction}
         selectedSolutionStore={selectedSolutionLanguage2Store}
         selectedTestStore={selectedTestLanguage2Store}
+        bind:showTestResult={showTestResultLanguage2}
 />
 
 <style>
     #title-difficulty {
-        /*vertical-align: super;*/
         font-size: 70%;
         margin-left: 3%;
     }

@@ -34,7 +34,7 @@
         <NavbarBrand>
             <img id="navbar-img" height="auto" src="images/logo-navbar.png" class="d-xl-inline d-none"
                  alt="navbar logo">
-            <Link to="add-task"><span class="navbar-home">My bachelor's theses</span></Link>
+            <Link to="/"><span class="navbar-home">My bachelor's theses</span></Link>
         </NavbarBrand>
         <NavbarToggler on:click={() => (isOpen = !isOpen)}/>
         <Collapse {isOpen} navbar expand="xl" on:update={handleOpen}>

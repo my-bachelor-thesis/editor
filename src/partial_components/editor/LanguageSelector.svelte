@@ -7,7 +7,10 @@
     import {Col} from "sveltestrap";
     import HelpMessage from "../messages/HelpMessage.svelte";
 
-    export let language, initValues, taskId, url, selectedSolutionStore, selectedTestStore, isSecondLanguageIsSelected
+    export let language, initValues, taskId, url, selectedSolutionStore, selectedTestStore, isSecondLanguageIsSelected,
+        onSelectSolution, onSelectTest, updateLastOpened, lastOpened
+
+    let selectedLanguage, lastOpenedSolutionId
 
     function hideLanguage() {
         if (language.number === 2) {
@@ -96,19 +99,32 @@
                 }],
             })
         })()
+
         language.solutionsAndTestsSelector.show = true
         language.solutionsAndTestsSelector.promise = fetchSolutionsAndTasks(language.name)
         language.solutionsAndTestsSelector.promise.then((data) => {
-            language.solutionsAndTestsSelector.solutions = data.solutions
-            language.solutionsAndTestsSelector.tests = data.tests
             // TODO: zorad podla datumu vzostupne
-            if (Object.keys(language.solutionsAndTestsSelector.solutions).length > 0) {
-                language.solutionsAndTestsSelector.solutions = helpers.transformSolutionsForSelect(language.solutionsAndTestsSelector.solutions)
-                selectedSolutionStore.value.set(language.solutionsAndTestsSelector.solutions[0])
-            }
+            language.solutionsAndTestsSelector.solutions = helpers.transformSolutionsForSelect(data.solutions)
+            language.solutionsAndTestsSelector.tests = helpers.transformTestsForSelect(data.tests)
+
             if (Object.keys(language.solutionsAndTestsSelector.tests).length > 0) {
-                language.solutionsAndTestsSelector.tests = helpers.transformTestsForSelect(language.solutionsAndTestsSelector.tests)
-                selectedTestStore.value.set(language.solutionsAndTestsSelector.tests[0])
+                let firstTest = language.solutionsAndTestsSelector.tests[0]
+                selectedTestStore.value.set(firstTest)
+                onSelectTest(firstTest, language, selectedSolutionStore)
+            }
+
+            if (lastOpenedSolutionId) {
+                let sol = language.solutionsAndTestsSelector.solutions.find(x => x.value === lastOpenedSolutionId)
+                if (sol) {
+                    selectedSolutionStore.value.set(sol)
+                    onSelectSolution(sol, language, selectedTestStore, false)
+                }
+                // don't run again
+                lastOpenedSolutionId = 0
+            } else if (Object.keys(language.solutionsAndTestsSelector.solutions).length > 0) {
+                let firstSolution = language.solutionsAndTestsSelector.solutions[0]
+                selectedSolutionStore.value.set(firstSolution)
+                onSelectSolution(firstSolution, language, selectedTestStore)
             }
         })
     }
@@ -120,6 +136,16 @@
         }
         return res
     }
+
+    lastOpened.then(data => {
+        if (language.number === 1 && data.language_1) {
+            lastOpenedSolutionId = data.user_solution_id_for_language_1
+            selectedLanguage = {label: data.language_1, value: data.language_1}
+        } else if (language.number === 2 && data.language_2) {
+            lastOpenedSolutionId = data.user_solution_id_for_language_2
+            selectedLanguage = {label: data.language_2, value: data.language_2}
+        }
+    })
 </script>
 
 <Col>
@@ -132,7 +158,12 @@
 
         <Select id="language{language.number}-picker-select"
                 items={transformLanguagesForSelector(initValues.languages)}
-                on:select={changeLanguage} on:clear={() => hideLanguage(language.number)}
+                on:select={changeLanguage}
+                bind:value={selectedLanguage}
+                on:clear={() => {
+                    hideLanguage(language.number)
+                    updateLastOpened()
+                }}
                 isClearable={!(isSecondLanguageIsSelected && language.number === 1)}/>
     </div>
 </Col>

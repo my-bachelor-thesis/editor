@@ -7,7 +7,8 @@
     import {get} from "svelte/store";
     import {tick} from "svelte";
 
-    export let language, selectedSolutionStore, selectedTestStore, filters
+    export let language, selectedSolutionStore, selectedTestStore, filters, onSelectSolution,
+        onSelectTest
 
     function minimizeMaximizeFunc(index) {
         let elementType = index % 2 === 0 ? "solution" : "test"
@@ -25,6 +26,8 @@
             editor.style.display = "none"
         }
     }
+
+    // filters
 
     function solutionsThatDidntFail() {
         return language.solutionsAndTestsSelector.solutions.filter(solution => solution.exit_code === 0)
@@ -63,7 +66,9 @@
         <HelpMessage text="select a solution from available solutions"/>
         <Select id="solution{language.number}-picker-select"
                 items={filters.showNotFailedSolutions ? solutionsThatDidntFail(language.solutionsAndTestsSelector.solutions) : language.solutionsAndTestsSelector.solutions}
-                bind:value={$selectedSolutionStore} isClearable={false}/>
+                bind:value={$selectedSolutionStore} isClearable={false}
+                on:select={(e) => onSelectSolution(e.detail, language, selectedTestStore)}
+        />
     </Col>
 
     <Col xs="auto">
@@ -82,7 +87,9 @@
         <HelpMessage text="select a test from available tests"/>
         <Select id="test{language.number}-picker-select"
                 items={filters.showFinalTests ? finalTests(language.solutionsAndTestsSelector.tests) : language.solutionsAndTestsSelector.tests}
-                bind:value={$selectedTestStore} isClearable={false}/>
+                bind:value={$selectedTestStore} isClearable={false}
+                on:select={(e) => onSelectTest(e.detail, language, selectedSolutionStore)}
+        />
     </Col>
 
 

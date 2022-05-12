@@ -30,6 +30,10 @@
 
     let isDisabled
     selectedStore.subscribe(val => {
+        if (!val) {
+            isDisabled = true
+            return
+        }
         isDisabled = val.public || val.final
     })
 

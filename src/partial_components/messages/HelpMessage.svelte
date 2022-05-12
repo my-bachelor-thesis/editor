@@ -6,7 +6,7 @@
 </script>
 
 <div class="tooltip-wrapper">
-    <img src="images/question-circle.svg" alt="tooltip image" bind:this={img}>
+    <img src="images/question-circle.svg" alt="tooltip" bind:this={img}>
     <Tooltip target={img}>{text}</Tooltip>
 </div>
 

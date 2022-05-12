@@ -4,6 +4,6 @@
     export let msg
 </script>
 
-<AccordionItem header="Details from the run">
+<AccordionItem header="Details from the run" active>
     <p class="error-msg"><b>{msg}</b></p>
 </AccordionItem>

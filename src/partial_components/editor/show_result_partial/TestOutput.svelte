@@ -1,11 +1,13 @@
 <script>
     import {AccordionItem} from 'sveltestrap'
 
-    export let output
+    export let output, failed
+
+    $: colorClass = failed ? "text-danger" : ""
 </script>
 
-<AccordionItem header="Test output">
-    <div class="test-output">{output.replaceAll('^', '\n')}</div>
+<AccordionItem header="Test output" active>
+    <div class="test-output {colorClass}">{decodeURIComponent(output.replace(/[0-9a-f]{2}/g, '%$&'))}</div>
 </AccordionItem>
 
 <style>

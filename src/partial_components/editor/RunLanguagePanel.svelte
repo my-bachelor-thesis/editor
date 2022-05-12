@@ -1,20 +1,25 @@
 <script>
-    import ShowResult from "./ShowResult.svelte"
     import * as helpers from "../../helpers"
     import md5 from 'blueimp-md5';
-    import {get} from "svelte/store";
     import {Accordion, AccordionItem} from 'sveltestrap';
+    import TestOutput from "./show_result_partial/TestOutput.svelte";
+    import DetailsFromRunErr from "./show_result_partial/DetailsFromRunErr.svelte";
+    import ErrorMessage from "../messages/ErrorMessage.svelte";
 
-    // TODO: use paringFunction
-    export let language, url, taskId, paringFunction, selectedSolutionStore, selectedTestStore
+    export let language, url, taskId, selectedSolutionStore, selectedTestStore, showTestResult
 
-    async function fetchTestResults(solution, test, urlParam) {
+    let postError
+
+    function paringFunction(solutionHash, testHash) {
+        return solutionHash + "," + testHash
+    }
+
+    async function fetchTestResults(solution, test, urlParam, hashId) {
         let body = JSON.stringify({
             solution: solution,
-            solution_id: parseInt(get(selectedSolutionStore.value).value),
             test: test,
-            test_id: parseInt(get(selectedTestStore.value).value),
-            task_id: parseInt(taskId)
+            task_id: parseInt(taskId),
+            hash_id: hashId
         })
         return helpers.postJson(`${url}/${urlParam}/${language.name}`, body)
     }
@@ -48,52 +53,66 @@
         let testInEditor = language.editors.test.state.doc.toString()
         let testInEditorHash = md5(testInEditor)
 
-        language.testResult.show = true
+        let hashId = paringFunction(solutionInEditorHash, testInEditorHash)
 
-        if (language.cache.solutionFromLastRun === null || language.cache.testFromLastRun === null) {
-            language.infoBoxContent.push("running, nothing to save")
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test")
-            language.cache.solutionFromLastRun = solutionInEditorHash
-            language.cache.testFromLastRun = testInEditorHash
-        } else if (language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
-            language.infoBoxContent.push("nothing changed, not running")
+        console.log("ifing", language.cache.solutionFromLastRun === solutionInEditorHash, language.cache.testFromLastRun === testInEditorHash)
+
+        if (language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
+            if (!showTestResult) {
+                language.infoBoxContent = ["running, nothing to save"]
+                language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test", hashId)
+                language.cache.solutionFromLastRun = solutionInEditorHash
+                language.cache.testFromLastRun = testInEditorHash
+            } else {
+                language.infoBoxContent = ["nothing changed, not running"]
+            }
         } else if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
-            language.infoBoxContent.push("saving solution, test and running")
+            language.infoBoxContent = ["saving solution, test and running"]
 
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both")
+            language.dontHideTestResultWhileInsertingSolution = true
+            language.dontHideTestResultWhileInsertingTest = true
 
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both", hashId)
             language.testResult.promise.then(data => {
                 insertNewSolutionIntoSelector(solutionInEditorHash, data)
                 insertNewTestIntoSelector(testInEditorHash, data)
             })
         } else if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
-            language.infoBoxContent.push("saving solution and running")
+            language.infoBoxContent = ["saving solution and running"]
 
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-solution")
+            language.dontHideTestResultWhileInsertingSolution = true
 
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-solution", hashId)
             language.testResult.promise.then(data => {
                 insertNewSolutionIntoSelector(solutionInEditorHash, data)
             })
         } else {
-            language.infoBoxContent.push("saving test and running")
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-test")
+            language.infoBoxContent = ["saving test and running"]
+
+            language.dontHideTestResultWhileInsertingTest = true
+
+            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-test", hashId)
             language.testResult.promise.then(data => {
                 insertNewTestIntoSelector(testInEditorHash, data)
             })
         }
+        showTestResult = true
+
     }
 </script>
 
+<ErrorMessage msg={postError}/>
+
 {#if language.name}
-    <Accordion stayOpen>
-        <div id="test-result-{language.number}">
-            <button type="button" on:click={runTest}>
-                Run {language.number}. language
-            </button>
+    <div id="test-result-{language.number}">
+        <button type="button" on:click={runTest}>
+            Run {language.number}. language
+        </button>
 
-            <br><br>
+        <br><br>
 
-            {#if language.testResult.show}
+        {#if showTestResult}
+            <Accordion stayOpen>
                 <AccordionItem header="Status">
                     <div>
                         {#each language.infoBoxContent as line}
@@ -101,12 +120,38 @@
                         {/each}
                     </div>
                 </AccordionItem>
-            {/if}
 
-            <ShowResult showTestResult={language.testResult.show}
-                        promiseResult={language.testResult.promise}/>
-        </div>
-    </Accordion>
+                <!--TODO: what if timeout-->
+
+                {#await language.testResult.promise}
+                    <p>loading...</p>
+                {:then res}
+                    {#if res.solution.exit_code === 1}
+                        <DetailsFromRunErr msg="couldn't compile"></DetailsFromRunErr>
+                        <TestOutput output={res.solution.output} failed={true}/>
+                    {:else}
+                        {#if res.solution.exit_code === 2}
+                            <DetailsFromRunErr msg="test failed"></DetailsFromRunErr>
+                            <TestOutput output={res.solution.output} failed={true}/>
+                        {:else}
+                            <AccordionItem header="Details from the run">
+                                <p class="success-msg"><b>test OK</b></p>
+                                <p>compilation time: {res.solution.compilation_time} s</p>
+                                <p>real time: {res.solution.real_time} s</p>
+                                <p>kernel time: {res.solution.kernel_time} s</p>
+                                <p>user time: {res.solution.user_time} s</p>
+                                <p>max ram usage: {res.solution.max_ram_usage} mb</p>
+                                <p>binary size: {res.solution.binary_size} mb</p>
+                            </AccordionItem>
+                            <TestOutput output={res.solution.output} failed={false}/>
+                        {/if}
+                    {/if}
+                {:catch error}
+                    <p class="error">{error.message}</p>
+                {/await}
+            </Accordion>
+        {/if}
+    </div>
 {/if}
 
 <style>

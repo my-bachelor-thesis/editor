@@ -146,13 +146,10 @@ export function languageName(lang) {
 }
 
 function getIteratorForTransform(obj) {
-    let iterator
     if (obj instanceof Map) {
-        iterator = obj.entries()
-    } else {
-        iterator = Object.entries(obj)
+        return obj.entries()
     }
-    return iterator
+    return Object.entries(obj)
 }
 
 export function makeSolutionLabel(solution) {
@@ -167,12 +164,13 @@ export function transformSolutionsForSelect(solutions) {
 
     for (const [id, solution] of iterator) {
         res.push({
-            value: id,
+            value: parseInt(id),
             label: makeSolutionLabel(solution),
-            exit_code: solution.exit_code,
+            exit_code: parseInt(solution.exit_code),
             public: solution.public,
             name: solution.name,
-            last_modified: solution.last_modified
+            last_modified: solution.last_modified,
+            test_id: parseInt(solution.test_id)
         })
     }
     return res
@@ -190,7 +188,7 @@ export function transformTestsForSelect(tests) {
 
     for (const [id, test] of iterator) {
         res.push({
-            value: id,
+            value: parseInt(id),
             label: makeTestLabel(test),
             final: test.final,
             pubic: test.public,
