@@ -4,8 +4,6 @@
     import {GridStyleStore} from "./gridstyle";
     import Select from "svelte-select";
     import HelpMessage from "../messages/HelpMessage.svelte";
-    import {get} from "svelte/store";
-    import {tick} from "svelte";
 
     export let language, selectedSolutionStore, selectedTestStore, filters, onSelectSolution,
         onSelectTest
@@ -35,24 +33,6 @@
 
     function finalTests() {
         return language.solutionsAndTestsSelector.tests.filter(test => test.final === true)
-    }
-
-    $: if (filters.showNotFailedSolutions) {
-        if (get(selectedSolutionStore).exit_code !== 0) {
-            (async () => {
-                await tick()
-                selectedSolutionStore.value.set(language.solutionsAndTestsSelector.solutions[0])
-            })()
-        }
-    }
-
-    $: if (filters.showFinalTests) {
-        if (!get(selectedTestStore).final) {
-            (async () => {
-                await tick()
-                selectedTestStore.value.set(language.solutionsAndTestsSelector.tests[0])
-            })()
-        }
     }
 </script>
 

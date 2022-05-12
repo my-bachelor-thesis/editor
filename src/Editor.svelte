@@ -129,7 +129,7 @@
     }
 
     function insertSelectedSolutionIntoEditor(language, selected) {
-        if (selected === undefined) {
+        if (!selected) {
             return
         }
         fetchCodeOfSolution(selected.value).then((data) => {
@@ -187,7 +187,7 @@
     }
 
     function insertSelectedTestIntoEditor(language, selected) {
-        if (selected === undefined) {
+        if (!selected) {
             return
         }
         fetchCodeOfTest(selected.value).then((data) => {
