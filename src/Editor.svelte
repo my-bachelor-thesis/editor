@@ -24,8 +24,9 @@
     let initValues = getInitValues()
 
     let filters = {
-        showNotFailedSolutions: false,
         showFinalTests: false,
+        showPublicTests: false,
+        showPublicSolutions: false,
     }
 
     function SolutionsAndTests() {
@@ -145,8 +146,6 @@
             updateLastOpened()
         }
 
-        console.log("event", event, get(selectedTestStore).value === event.test_id)
-
         insertSelectedSolutionIntoEditor(language, event)
 
         if (!event.test_id) {
@@ -168,7 +167,6 @@
             language.number === 1 ? showTestResultLanguage1 = false : showTestResultLanguage2 = false
 
             helpers.fetchJson(`${url}/editor/get-solution-result/${event.value}/${get(selectedTestStore).value}`).then(data => {
-                console.log("90", data, event.value, get(selectedTestStore).value)
                 if (data !== "not found") {
                     language.testResult.promise = new Promise((resolve, _) => {
                         resolve({result: data})
@@ -196,7 +194,6 @@
     }
 
     function insertSelectedTestIntoEditor(language, selected) {
-        console.log(":", selected)
         if (!selected) {
             return
         }
@@ -209,8 +206,6 @@
     }
 
     function onSelectTest(event, language, selectedSolutionStore) {
-        console.log("f")
-
         insertSelectedTestIntoEditor(language, event)
 
         if (!get(selectedSolutionStore) || get(selectedSolutionStore).test_id === event.value) {
@@ -279,14 +274,18 @@
         <legend>Choose filters</legend>
         <div>
             <label>
-                <input type="checkbox" bind:checked={filters.showNotFailedSolutions}>
-                show only solutions that didn't fail
+                <input type="checkbox" bind:checked={filters.showFinalTests}>
+                show only final tests
+            </label>&nbsp;&nbsp;
+            <label>
+                <input type="checkbox" bind:checked={filters.showPublicTests}>
+                show only public tests
             </label>
         </div>
         <div>
             <label>
-                <input type="checkbox" bind:checked={filters.showFinalTests}>
-                show only final tests
+                <input type="checkbox" bind:checked={filters.showPublicSolutions}>
+                show only public solutions
             </label>
         </div>
     </fieldset>

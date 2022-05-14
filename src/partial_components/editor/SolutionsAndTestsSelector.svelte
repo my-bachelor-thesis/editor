@@ -27,12 +27,20 @@
 
     // filters
 
-    function solutionsThatDidntFail() {
-        return language.solutionsAndTestsSelector.solutions.filter(solution => solution.exit_code === 0)
-    }
+    let tests, solutions
 
-    function finalTests() {
-        return language.solutionsAndTestsSelector.tests.filter(test => test.final === true)
+    $: if (filters) {
+        tests = language.solutionsAndTestsSelector.tests
+        solutions = language.solutionsAndTestsSelector.solutions
+        if (filters.showFinalTests) {
+            tests = tests.filter(test => test.final)
+        }
+        if (filters.showPublicTests) {
+            tests = tests.filter(test => test.public)
+        }
+        if (filters.showPublicSolutions) {
+            solutions = solutions.filter(solution => solution.public)
+        }
     }
 </script>
 
@@ -45,7 +53,7 @@
         <label for="solution{language.number}-picker-select" class="no-wrap"><b>Select from solutions:</b></label>
         <HelpMessage text="select a solution from available solutions"/>
         <Select id="solution{language.number}-picker-select"
-                items={filters.showNotFailedSolutions ? solutionsThatDidntFail(language.solutionsAndTestsSelector.solutions) : language.solutionsAndTestsSelector.solutions}
+                items={solutions}
                 bind:value={$selectedSolutionStore} isClearable={false}
                 on:select={(e) => onSelectSolution(e.detail, language, selectedTestStore, selectedSolutionStore)}
         />
@@ -66,7 +74,7 @@
         <label for="test{language.number}-picker-select" class="no-wrap"><b>Select from tests:</b></label>
         <HelpMessage text="select a test from available tests"/>
         <Select id="test{language.number}-picker-select"
-                items={filters.showFinalTests ? finalTests(language.solutionsAndTestsSelector.tests) : language.solutionsAndTestsSelector.tests}
+                items={tests}
                 bind:value={$selectedTestStore} isClearable={false}
                 on:select={(e) => onSelectTest(e.detail, language, selectedSolutionStore)}
         />

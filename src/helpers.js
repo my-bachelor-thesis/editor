@@ -152,7 +152,7 @@ function getIteratorForTransform(obj) {
 }
 
 export function makeSolutionLabel(solution) {
-    return `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.is_public ? "(public)" : ""}`
+    return `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.is_public ? "🌐" : ""}`
 }
 
 // solutions can be a map or an object
@@ -175,7 +175,7 @@ export function transformSolutionsForSelect(solutions) {
 }
 
 export function makeTestLabel(test) {
-    return `${test.name === "" ? "" : test.name + " - "}${test.last_modified}${test.final ? " ✔ " : ""}${test.public ? "(public)" : ""}`
+    return `${test.name === "" ? "" : test.name + " - "}${test.last_modified}${test.final ? " ✔ " : ""}${test.public ? "🌐" : ""}`
 }
 
 // tests can be a map or an object
@@ -189,7 +189,7 @@ export function transformTestsForSelect(tests) {
             value: parseInt(id),
             label: makeTestLabel(test),
             final: test.final,
-            pubic: test.public,
+            public: test.public,
             name: test.name,
             last_modified: test.last_modified
         })

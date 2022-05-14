@@ -85,7 +85,6 @@
                 language.dontHideTestResultWhileInsertingSolution = true
                 language.dontHideTestResultWhileInsertingTest = true
 
-                console.log("som tu")
                 language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both", hashId)
                 let data = await language.testResult.promise
                 insertNewSolutionIntoSelector(solutionInEditorHash, data, data.inserted_test.id)
