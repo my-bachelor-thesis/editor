@@ -103,7 +103,6 @@
         language.solutionsAndTestsSelector.show = true
         language.solutionsAndTestsSelector.promise = fetchSolutionsAndTasks(language.name)
         language.solutionsAndTestsSelector.promise.then((data) => {
-            // TODO: zorad podla datumu vzostupne
             language.solutionsAndTestsSelector.solutions = helpers.transformSolutionsForSelect(data.solutions)
             language.solutionsAndTestsSelector.tests = helpers.transformTestsForSelect(data.tests)
 
@@ -117,14 +116,14 @@
                 let sol = language.solutionsAndTestsSelector.solutions.find(x => x.value === lastOpenedSolutionId)
                 if (sol) {
                     selectedSolutionStore.value.set(sol)
-                    onSelectSolution(sol, language, selectedTestStore, false)
+                    onSelectSolution(sol, language, selectedTestStore, selectedSolutionStore, false)
                 }
                 // don't run again
                 lastOpenedSolutionId = 0
             } else if (Object.keys(language.solutionsAndTestsSelector.solutions).length > 0) {
                 let firstSolution = language.solutionsAndTestsSelector.solutions[0]
                 selectedSolutionStore.value.set(firstSolution)
-                onSelectSolution(firstSolution, language, selectedTestStore)
+                onSelectSolution(firstSolution, language, selectedTestStore, selectedSolutionStore)
             }
         })
     }
@@ -138,6 +137,9 @@
     }
 
     lastOpened.then(data => {
+        if (data === "not found") {
+            // ignore
+        }
         if (language.number === 1 && data.language_1) {
             lastOpenedSolutionId = data.user_solution_id_for_language_1
             selectedLanguage = {label: data.language_1, value: data.language_1}

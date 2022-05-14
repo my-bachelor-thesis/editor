@@ -140,17 +140,12 @@
         })
     }
 
-    function onSelectSolution(event, language, selectedTestStore, doUpdateLastOpened = true) {
-        if (language.dontHideTestResultWhileInsertingSolution) {
-            // don't ship again
-            language.dontHideTestResultWhileInsertingSolution = false
-        } else {
-            language.number === 1 ? showTestResultLanguage1 = false : showTestResultLanguage2 = false
-        }
-
+    function onSelectSolution(event, language, selectedTestStore, selectedSolutionStore, doUpdateLastOpened = true) {
         if (doUpdateLastOpened) {
             updateLastOpened()
         }
+
+        console.log("event", event, get(selectedTestStore).value === event.test_id)
 
         insertSelectedSolutionIntoEditor(language, event)
 
@@ -158,15 +153,29 @@
             let index = language.solutionsAndTestsSelector.solutions.findIndex(x => x.value === event.value)
             language.solutionsAndTestsSelector.solutions[index].test_id = get(selectedTestStore).value
             updateTestId(event.value, get(selectedTestStore).value)
+        } else if (get(selectedTestStore).value !== event.test_id) {
+            let test = language.solutionsAndTestsSelector.tests.find(x => x.value === event.test_id)
+            if (test) {
+                selectedTestStore.set(test)
+                onSelectTest(test, language, selectedSolutionStore)
+            }
         }
 
-        if (!get(selectedTestStore) || !event.test_id || get(selectedTestStore).value === event.test_id) {
-            return
-        }
+        if (language.dontHideTestResultWhileInsertingSolution) {
+            // don't show again
+            language.dontHideTestResultWhileInsertingSolution = false
+        } else {
+            language.number === 1 ? showTestResultLanguage1 = false : showTestResultLanguage2 = false
 
-        let test = language.solutionsAndTestsSelector.tests.find(x => x.value === event.test_id)
-        if (test) {
-            selectedTestStore.set(test)
+            helpers.fetchJson(`${url}/editor/get-solution-result/${event.value}/${get(selectedTestStore).value}`).then(data => {
+                console.log("90", data, event.value, get(selectedTestStore).value)
+                if (data !== "not found") {
+                    language.testResult.promise = new Promise((resolve, _) => {
+                        resolve({result: data})
+                    })
+                    language.number === 1 ? showTestResultLanguage1 = true : showTestResultLanguage2 = true
+                }
+            })
         }
     }
 
@@ -187,6 +196,7 @@
     }
 
     function insertSelectedTestIntoEditor(language, selected) {
+        console.log(":", selected)
         if (!selected) {
             return
         }
@@ -199,14 +209,10 @@
     }
 
     function onSelectTest(event, language, selectedSolutionStore) {
-        if (language.dontHideTestResultWhileInsertingTest) {
-            // don't ship again
-            language.dontHideTestResultWhileInsertingTest = false
-        } else {
-            language.number === 1 ? showTestResultLanguage1 = false : showTestResultLanguage2 = false
-        }
+        console.log("f")
 
         insertSelectedTestIntoEditor(language, event)
+
         if (!get(selectedSolutionStore) || get(selectedSolutionStore).test_id === event.value) {
             return
         }
@@ -214,7 +220,25 @@
         let index = language.solutionsAndTestsSelector.solutions.findIndex(x => x.value === get(selectedSolutionStore).value)
         language.solutionsAndTestsSelector.solutions[index].test_id = event.value
 
-        updateTestId(get(selectedSolutionStore).value, event.value)
+        if (!language.dontHideTestResultWhileInsertingTest) {
+            updateTestId(get(selectedSolutionStore).value, event.value)
+        }
+
+        if (language.dontHideTestResultWhileInsertingTest) {
+            // don't show again
+            language.dontHideTestResultWhileInsertingTest = false
+        } else {
+            language.number === 1 ? showTestResultLanguage1 = false : showTestResultLanguage2 = false
+        }
+
+        helpers.fetchJson(`${url}/editor/get-solution-result/${get(selectedSolutionStore).value}/${event.value}`).then(data => {
+            if (data !== "not found") {
+                language.testResult.promise = new Promise((resolve, _) => {
+                    resolve({result: data})
+                })
+                language.number === 1 ? showTestResultLanguage1 = true : showTestResultLanguage2 = true
+            }
+        })
     }
 
     // getting data about last opened solutions
@@ -371,6 +395,7 @@
         selectedSolutionStore={selectedSolutionLanguage1Store}
         selectedTestStore={selectedTestLanguage1Store}
         bind:showTestResult={showTestResultLanguage1}
+        updateTestId={updateTestId}
 />
 
 <!-- test results 2 -->
@@ -382,6 +407,7 @@
         selectedSolutionStore={selectedSolutionLanguage2Store}
         selectedTestStore={selectedTestLanguage2Store}
         bind:showTestResult={showTestResultLanguage2}
+        updateTestId={updateTestId}
 />
 
 <style>

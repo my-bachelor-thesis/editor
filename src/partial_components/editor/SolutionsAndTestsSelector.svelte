@@ -47,7 +47,7 @@
         <Select id="solution{language.number}-picker-select"
                 items={filters.showNotFailedSolutions ? solutionsThatDidntFail(language.solutionsAndTestsSelector.solutions) : language.solutionsAndTestsSelector.solutions}
                 bind:value={$selectedSolutionStore} isClearable={false}
-                on:select={(e) => onSelectSolution(e.detail, language, selectedTestStore)}
+                on:select={(e) => onSelectSolution(e.detail, language, selectedTestStore, selectedSolutionStore)}
         />
     </Col>
 

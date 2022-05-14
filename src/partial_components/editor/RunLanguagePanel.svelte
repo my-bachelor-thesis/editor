@@ -5,8 +5,9 @@
     import TestOutput from "./show_result_partial/TestOutput.svelte";
     import DetailsFromRunErr from "./show_result_partial/DetailsFromRunErr.svelte";
     import ErrorMessage from "../messages/ErrorMessage.svelte";
+    import {get} from "svelte/store";
 
-    export let language, url, taskId, selectedSolutionStore, selectedTestStore, showTestResult
+    export let language, url, taskId, selectedSolutionStore, selectedTestStore, showTestResult, updateTestId
 
     let postError
 
@@ -17,16 +18,23 @@
     async function fetchTestResults(solution, test, urlParam, hashId) {
         let body = JSON.stringify({
             solution: solution,
+            solution_id: get(selectedSolutionStore).value,
             test: test,
+            test_id: get(selectedTestStore).value,
             task_id: parseInt(taskId),
             hash_id: hashId
         })
         return helpers.postJson(`${url}/${urlParam}/${language.name}`, body)
     }
 
-    function insertNewSolutionIntoSelector(solutionHash, data) {
+    function insertNewSolutionIntoSelector(solutionHash, data, test_id) {
         language.cache.solutionFromLastRun = solutionHash
-        let solution = new Map([[data.solution.id, data.solution]])
+        let solution = new Map([[data.inserted_solution.id, {
+            name: "",
+            last_modified: data.inserted_solution.last_modified,
+            is_public: false,
+            test_id: test_id
+        }]])
         let transformedSolution = helpers.transformSolutionsForSelect(solution)[0]
         selectedSolutionStore.value.set(transformedSolution)
         language.solutionsAndTestsSelector.solutions.push(transformedSolution)
@@ -34,9 +42,9 @@
 
     function insertNewTestIntoSelector(testHash, data) {
         language.cache.testFromLastRun = testHash
-        let test = new Map([[data.test_id, {
+        let test = new Map([[data.inserted_test.id, {
             name: "",
-            last_modified: data.test_last_modified,
+            last_modified: data.inserted_test.last_modified,
             final: false,
             public: false
         }]])
@@ -45,7 +53,7 @@
         language.solutionsAndTestsSelector.tests.push(transformedTest)
     }
 
-    function runTest() {
+    function runSolution() {
         language.infoBoxContent = []
 
         let solutionInEditor = language.editors.solution.state.doc.toString()
@@ -55,10 +63,9 @@
 
         let hashId = paringFunction(solutionInEditorHash, testInEditorHash)
 
-        console.log("ifing", language.cache.solutionFromLastRun === solutionInEditorHash, language.cache.testFromLastRun === testInEditorHash)
-
         if (language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
             if (!showTestResult) {
+                showTestResult = true
                 language.infoBoxContent = ["running, nothing to save"]
                 language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test", hashId)
                 language.cache.solutionFromLastRun = solutionInEditorHash
@@ -66,38 +73,43 @@
             } else {
                 language.infoBoxContent = ["nothing changed, not running"]
             }
-        } else if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
-            language.infoBoxContent = ["saving solution, test and running"]
-
-            language.dontHideTestResultWhileInsertingSolution = true
-            language.dontHideTestResultWhileInsertingTest = true
-
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both", hashId)
-            language.testResult.promise.then(data => {
-                insertNewSolutionIntoSelector(solutionInEditorHash, data)
-                insertNewTestIntoSelector(testInEditorHash, data)
-            })
-        } else if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
-            language.infoBoxContent = ["saving solution and running"]
-
-            language.dontHideTestResultWhileInsertingSolution = true
-
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-solution", hashId)
-            language.testResult.promise.then(data => {
-                insertNewSolutionIntoSelector(solutionInEditorHash, data)
-            })
-        } else {
-            language.infoBoxContent = ["saving test and running"]
-
-            language.dontHideTestResultWhileInsertingTest = true
-
-            language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-test", hashId)
-            language.testResult.promise.then(data => {
-                insertNewTestIntoSelector(testInEditorHash, data)
-            })
+            return
         }
-        showTestResult = true
 
+        showTestResult = true;
+
+        (async () => {
+            if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun !== testInEditorHash) {
+                language.infoBoxContent = ["saving solution, test and running"]
+
+                language.dontHideTestResultWhileInsertingSolution = true
+                language.dontHideTestResultWhileInsertingTest = true
+
+                console.log("som tu")
+                language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-both", hashId)
+                let data = await language.testResult.promise
+                insertNewSolutionIntoSelector(solutionInEditorHash, data, data.inserted_test.id)
+                insertNewTestIntoSelector(testInEditorHash, data)
+            } else if (language.cache.solutionFromLastRun !== solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
+                language.infoBoxContent = ["saving solution and running"]
+
+                language.dontHideTestResultWhileInsertingSolution = true
+
+                language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-solution", hashId)
+                let data = await language.testResult.promise
+                insertNewSolutionIntoSelector(solutionInEditorHash, data, get(selectedTestStore).value)
+            } else {
+                language.infoBoxContent = ["saving test and running"]
+
+                language.dontHideTestResultWhileInsertingTest = true
+
+                language.testResult.promise = fetchTestResults(solutionInEditor, testInEditor, "test-and-save-test", hashId)
+                let data = await language.testResult.promise
+                insertNewTestIntoSelector(testInEditorHash, data)
+            }
+
+            updateTestId(get(selectedSolutionStore).value, get(selectedTestStore).value)
+        })()
     }
 </script>
 
@@ -105,7 +117,7 @@
 
 {#if language.name}
     <div id="test-result-{language.number}">
-        <button type="button" on:click={runTest}>
+        <button type="button" on:click={runSolution}>
             Run {language.number}. language
         </button>
 
@@ -126,24 +138,24 @@
                 {#await language.testResult.promise}
                     <p>loading...</p>
                 {:then res}
-                    {#if res.solution.exit_code === 1}
+                    {#if res.result.exit_code === 1}
                         <DetailsFromRunErr msg="couldn't compile"></DetailsFromRunErr>
-                        <TestOutput output={res.solution.output} failed={true}/>
+                        <TestOutput output={res.result.output} failed={true}/>
                     {:else}
-                        {#if res.solution.exit_code === 2}
+                        {#if res.result.exit_code === 2}
                             <DetailsFromRunErr msg="test failed"></DetailsFromRunErr>
-                            <TestOutput output={res.solution.output} failed={true}/>
+                            <TestOutput output={res.result.output} failed={true}/>
                         {:else}
                             <AccordionItem header="Details from the run">
                                 <p class="success-msg"><b>test OK</b></p>
-                                <p>compilation time: {res.solution.compilation_time} s</p>
-                                <p>real time: {res.solution.real_time} s</p>
-                                <p>kernel time: {res.solution.kernel_time} s</p>
-                                <p>user time: {res.solution.user_time} s</p>
-                                <p>max ram usage: {res.solution.max_ram_usage} mb</p>
-                                <p>binary size: {res.solution.binary_size} mb</p>
+                                <p>compilation time: {res.result.compilation_time} s</p>
+                                <p>real time: {res.result.real_time} s</p>
+                                <p>kernel time: {res.result.kernel_time} s</p>
+                                <p>user time: {res.result.user_time} s</p>
+                                <p>max ram usage: {res.result.max_ram_usage} mb</p>
+                                <p>binary size: {res.result.binary_size} mb</p>
                             </AccordionItem>
-                            <TestOutput output={res.solution.output} failed={false}/>
+                            <TestOutput output={res.result.output} failed={false}/>
                         {/if}
                     {/if}
                 {:catch error}

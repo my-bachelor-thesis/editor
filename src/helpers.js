@@ -12,14 +12,13 @@ store.url.subscribe(val => {
     url = val
 })
 
-export async function fetchJson(url) {
+export async function fetchJson(url, acceptedHttpCodes = []) {
     const res = await fetch(url)
     const data = await res.json()
     if (res.ok) {
         return data
-    } else {
-        throw new Error(data)
     }
+    throw new Error(data)
 }
 
 export async function postJson(url, content) {
@@ -153,7 +152,7 @@ function getIteratorForTransform(obj) {
 }
 
 export function makeSolutionLabel(solution) {
-    return `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.exit_code === 0 ? "" : " ❌ "}${solution.is_public ? "(public)" : ""}`
+    return `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.is_public ? "(public)" : ""}`
 }
 
 // solutions can be a map or an object
@@ -166,7 +165,6 @@ export function transformSolutionsForSelect(solutions) {
         res.push({
             value: parseInt(id),
             label: makeSolutionLabel(solution),
-            exit_code: parseInt(solution.exit_code),
             public: solution.public,
             name: solution.name,
             last_modified: solution.last_modified,
