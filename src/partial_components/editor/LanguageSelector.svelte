@@ -20,9 +20,9 @@
         language.name = ""
         GridStyleStore.removeBoxes(2)
         language.showSolution = false
-        language.solutionsAndTestsSelector.selectedSolution = 0
+        selectedSolutionStore.set(undefined)
         language.showTest = false
-        language.solutionsAndTestsSelector.selectedTest = 0
+        selectedTestStore.set(undefined)
     }
 
     async function fetchSolutionsAndTasks(language) {
