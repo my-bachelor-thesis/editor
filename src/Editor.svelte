@@ -101,14 +101,18 @@
     // update last opened
 
     function updateLastOpened() {
-        if (!get(selectedSolutionLanguage1Store)) {
-            return
-        }
-
         let id1 = language1.name ? parseInt(get(selectedSolutionLanguage1Store).value) : 0
         let id2 = 0
         if (get(selectedSolutionLanguage2Store) && language2.name) {
             id2 = parseInt(get(selectedSolutionLanguage2Store).value)
+        }
+
+        let vals = {
+            task_id: parseInt(taskId),
+            user_solution_id_for_language_1: id1,
+            language_1: language1.name,
+            user_solution_id_for_language_2: id2,
+            language_2: language2.name,
         }
 
         helpers.postJson(`${get(store.url)}/editor/change-last-opened`, JSON.stringify({

@@ -1,6 +1,6 @@
 <script>
     import {GridStyleStore} from "./gridstyle"
-    import {Card, CardBody} from "sveltestrap";
+    import {Card, CardBody} from "sveltestrap"
 
     export let initValues, language1, language2
 

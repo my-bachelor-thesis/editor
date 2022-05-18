@@ -136,13 +136,13 @@
             postError = ""
             helpers.postJson(`${get(store.url)}/add-task/form`, JSON.stringify(values)).then(
                 () => {
-                    navigate("publish?msg=The new task is ready to be published")
+                    navigate("not-published?msg=The new task is ready to be published")
                 }).catch(err => postError = err)
         }
     })
 
     // quill
-    let options = {placeholder: "Write description here...",}
+    let quillOptions = {placeholder: "Write description here...",}
     let descriptionContent = {html: '', text: ''}
 
     $: if (descriptionContent.text) {
@@ -279,7 +279,7 @@
 
         <br><br>
         <h3>description (first X characters will be used as a preview for the description)</h3>
-        <div class="editor" use:quill={options} on:text-change={e => descriptionContent = e.detail}></div>
+        <div class="editor" use:quill={quillOptions} on:text-change={e => descriptionContent = e.detail}></div>
         {#if $errors.description}
             <div class="error">{$errors.description}</div>
         {/if}
