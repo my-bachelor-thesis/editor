@@ -15,9 +15,9 @@
     }
 
     function checkUsernameForUniqueness(username) {
-        helpers.isValidUsername(username).then(res => {
+        helpers.isValidUsername(username).then(exists => {
             $errors.username = ""
-            if (res) {
+            if (exists) {
                 $errors.username = "username already exists"
             }
         })

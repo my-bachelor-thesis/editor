@@ -6,6 +6,7 @@ import {indentWithTab} from "@codemirror/commands";
 import {StreamLanguage} from "@codemirror/stream-parser";
 import {go} from "@codemirror/legacy-modes/mode/go";
 import {python} from "@codemirror/lang-python";
+import {get} from "svelte/store";
 
 let url = ""
 store.url.subscribe(val => {
@@ -49,9 +50,9 @@ export async function postJson(url, content) {
 
 export function redirectToHomeWithMessage(msg) {
     if (msg === undefined) {
-        navigate(url, {replace: false})
+        navigate("home")
     } else {
-        navigate(`${url}?msg=${msg}`, {replace: false})
+        navigate(`/?msg=${msg}`)
     }
 }
 
@@ -71,17 +72,31 @@ function parseJwt(token) {
     return JSON.parse(jsonPayload)
 }
 
+function getCookiesAsMap(cookieString) {
+    let cookies = new Map()
+
+    if (cookieString.length > 0) {
+        cookieString.split(';').forEach(function (el) {
+            let [key, value] = el.split('=')
+            cookies.set(key.trim(), value.trim())
+        })
+    }
+    return cookies
+}
+
 export function setStorage() {
-    let token = document.cookie.split("=")[1]
-    if (token === undefined || token === "") {
-        store.isAdmin.set(false)
-        store.username.set("")
-        store.userId.set(0)
+    let cookies = getCookiesAsMap(document.cookie)
+
+    let auth = cookies.get("auth")
+    if (!auth) {
+        store.resetUser()
     } else {
-        let parsedToken = parseJwt(token)
+        let parsedToken = parseJwt(auth)
         store.isAdmin.set(parsedToken.is_admin)
-        store.username.set(parsedToken.username)
         store.userId.set(parsedToken.user_id)
+        store.username.set(cookies.get("username"))
+        store.firstName.set(cookies.get("first_name"))
+        store.lastName.set(cookies.get("last_name"))
     }
 }
 
@@ -195,4 +210,16 @@ export function transformTestsForSelect(tests) {
         })
     }
     return res
+}
+
+export function redirectIfNotLoggedIn() {
+    if (!get(store.username)) {
+        navigate("login?msg=Login or Register")
+    }
+}
+
+export function redirectIfNotAdmin() {
+    if (!get(store.username) || !(get(store.isAdmin))) {
+        navigate("/?msg=You have to be admin to do that")
+    }
 }

@@ -5,6 +5,7 @@
     import {get} from "svelte/store";
     import Form from "./partial_components/forms/Form.svelte";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
+    import SuccessMessage from "./partial_components/messages/SuccessMessage.svelte";
 
     let postError = ""
 
@@ -39,10 +40,12 @@
         }
     })
 
+    const message = new URLSearchParams(window.location.search).get('msg')
 </script>
 
 <h1 class="small-margin">Login</h1>
 
+<SuccessMessage msg={message}/>
 <ErrorMessage msg={postError}/>
 
 <Form submitFunc={handleSubmit} handleFunc={handleChange} args={[

@@ -14,6 +14,9 @@
     import {Row, Tooltip} from "sveltestrap";
     import md5 from "blueimp-md5";
 
+    // redirect if not logged in
+    helpers.redirectIfNotLoggedIn()
+
     // variables //
 
     let url = get(store.url)

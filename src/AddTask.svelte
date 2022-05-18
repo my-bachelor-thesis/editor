@@ -11,6 +11,9 @@
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
     import {tick} from "svelte";
 
+    // redirect if not admin
+    helpers.redirectIfNotAdmin()
+
     const languages = [
         {value: helpers.languages.Go, label: 'Go'},
         {value: helpers.languages.Python, label: 'Python'},

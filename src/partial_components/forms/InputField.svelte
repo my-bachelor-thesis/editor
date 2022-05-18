@@ -1,7 +1,6 @@
 <script>
     export let label, error, value, type, handleFunc
     let name = label.toLowerCase().replaceAll(" ", "_")
-    const a = ""
 </script>
 
 <label class="label-form" for={name}>{label}</label>

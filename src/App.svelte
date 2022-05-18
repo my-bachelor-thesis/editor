@@ -11,6 +11,9 @@
     import * as helpers from "./helpers"
     import NotPublished from "./Publish.svelte"
     import Approve from "./Approve.svelte"
+    import About from "./About.svelte";
+    import {get} from "svelte/store";
+    import AccountSettings from "./AccountSettings.svelte";
 
     helpers.setStorage()
 
@@ -84,13 +87,12 @@
                             <Link to="logout"><span class="navbar-text">Logout</span></Link>
                         </NavLink>
                     </NavItem>
-
-                    <NavItem>
-                        <NavLink style="pointer-events: none;">
-                            <div>Logged in as {username}</div>
-                        </NavLink>
-                    </NavItem>
                 {/if}
+                <NavItem>
+                    <NavLink>
+                        <Link to="about"><span class="navbar-text">About</span></Link>
+                    </NavLink>
+                </NavItem>
             </Nav>
         </Collapse>
     </Navbar>
@@ -129,7 +131,11 @@
         </Route>
 
         <Route path="about">
-            <h3>About page coming soon</h3>
+            <About/>
+        </Route>
+
+        <Route path="account-settings">
+            <AccountSettings/>
         </Route>
     </main>
 </Router>
