@@ -6,6 +6,8 @@ import {indentWithTab} from "@codemirror/commands";
 import {StreamLanguage} from "@codemirror/stream-parser";
 import {go} from "@codemirror/legacy-modes/mode/go";
 import {python} from "@codemirror/lang-python";
+import {javascript} from "@codemirror/lang-javascript";
+import {cpp} from "@codemirror/lang-cpp";
 import {get} from "svelte/store";
 
 let url = ""
@@ -103,10 +105,14 @@ export function setStorage() {
 export class Editor {
     static #languageToCodemirrorFunction(language) {
         switch (language) {
-            case 'go':
+            case "go":
                 return StreamLanguage.define(go)
-            case 'python':
+            case "python":
                 return python()
+            case "javascript":
+                return javascript()
+            case "cpp":
+                return cpp()
         }
     }
 
@@ -124,28 +130,18 @@ export class Editor {
         })
     }
 
-    static newGoEditor(element, ...additionalExtensions) {
-        return this.#newEditor("go", element, ...additionalExtensions)
-    }
-
-    static newPythonEditor(element, ...additionalExtensions) {
-        return this.#newEditor("python", element, ...additionalExtensions)
-    }
-
     static newEditor(language, element, ...additionalExtensions) {
         switch (language) {
             case 'go':
-                return this.newGoEditor(element, ...additionalExtensions)
+                return this.#newEditor("go", element, ...additionalExtensions)
             case 'python':
-                return this.newPythonEditor(element, ...additionalExtensions)
+                return this.#newEditor("python", element, ...additionalExtensions)
+            case 'javascript':
+                return this.#newEditor("javascript", element, ...additionalExtensions)
+            case 'cpp':
+                return this.#newEditor("cpp", element, ...additionalExtensions)
         }
     }
-}
-
-export const languages = {
-    Go: "go",
-    Python: "python",
-    Cpp: "cpp"
 }
 
 export function languageName(lang) {
@@ -156,6 +152,10 @@ export function languageName(lang) {
             return "Python"
         case "cpp":
             return "C++"
+        case "js":
+            return "Javascript"
+        case "javascript":
+            return "Javascript"
     }
 }
 

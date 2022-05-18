@@ -44,28 +44,28 @@
     }
 
     function addGoSolutionEditor() {
-        addEditor(GoEditors, helpers.languages.Go, "solution")
+        addEditor(GoEditors, "go", "solution")
     }
 
     function addGoTestEditor() {
-        addEditor(GoEditors, helpers.languages.Go, "test")
+        addEditor(GoEditors, "go", "test")
     }
 
     function addPythonSolutionEditor() {
-        addEditor(PythonEditors, helpers.languages.Python, "solution")
+        addEditor(PythonEditors, "python", "solution")
     }
 
     function addPythonTestEditor() {
-        addEditor(PythonEditors, helpers.languages.Python, "test")
+        addEditor(PythonEditors, "python", "test")
     }
 
     let addSolutionFunc, addTestFunc
     switch (lang) {
-        case helpers.languages.Go:
+        case "go":
             addSolutionFunc = addGoSolutionEditor
             addTestFunc = addGoTestEditor
             break
-        case helpers.languages.Python:
+        case "python":
             addSolutionFunc = addPythonSolutionEditor
             addTestFunc = addPythonTestEditor
     }

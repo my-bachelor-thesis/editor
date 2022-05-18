@@ -6,14 +6,26 @@
     import Editor from "./Editor.svelte"
     import AddTask from "./AddTask.svelte"
     import Logout from "./Logout.svelte"
-    import {Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink,} from 'sveltestrap';
+    import {
+        Collapse,
+        Dropdown,
+        DropdownItem,
+        DropdownMenu,
+        DropdownToggle,
+        Nav,
+        Navbar,
+        NavbarBrand,
+        NavbarToggler,
+        NavItem,
+        NavLink,
+    } from 'sveltestrap';
     import * as store from "./store"
     import * as helpers from "./helpers"
     import NotPublished from "./Publish.svelte"
     import Approve from "./Approve.svelte"
     import About from "./About.svelte";
-    import {get} from "svelte/store";
     import AccountSettings from "./AccountSettings.svelte";
+    import PromoteUser from "./PromoteUser.svelte";
 
     helpers.setStorage()
 
@@ -43,20 +55,6 @@
         <Collapse {isOpen} navbar expand="xl" on:update={handleOpen}>
             <Nav class="ms-auto" navbar>
 
-                {#if isAdmin}
-                    <NavItem>
-                        <NavLink>
-                            <Link to="add-task"><span class="navbar-text">Add task</span></Link>
-                        </NavLink>
-                    </NavItem>
-
-                    <NavItem>
-                        <NavLink>
-                            <Link to="approve"><span class="navbar-text">Tasks to approve</span></Link>
-                        </NavLink>
-                    </NavItem>
-                {/if}
-
                 {#if username === ""}
                     <NavItem>
                         <NavLink>
@@ -84,6 +82,12 @@
 
                     <NavItem>
                         <NavLink>
+                            <Link to="add-task"><span class="navbar-text">Add task</span></Link>
+                        </NavLink>
+                    </NavItem>
+
+                    <NavItem>
+                        <NavLink>
                             <Link to="logout"><span class="navbar-text">Logout</span></Link>
                         </NavLink>
                     </NavItem>
@@ -93,6 +97,26 @@
                         <Link to="about"><span class="navbar-text">About</span></Link>
                     </NavLink>
                 </NavItem>
+
+                {#if isAdmin}
+
+                    <Dropdown nav inNavbar>
+                        <DropdownToggle nav caret>Admin options</DropdownToggle>
+                        <DropdownMenu end>
+
+                            <DropdownItem>
+                                <Link to="approve"><span class="navbar-text">Tasks to approve</span></Link>
+                            </DropdownItem>
+
+                            <DropdownItem>
+                                <Link to="promote-user"><span class="navbar-text">Promote user to admin</span>
+                                </Link>
+                            </DropdownItem>
+
+                        </DropdownMenu>
+                    </Dropdown>
+                {/if}
+
             </Nav>
         </Collapse>
     </Navbar>
@@ -136,6 +160,10 @@
 
         <Route path="account-settings">
             <AccountSettings/>
+        </Route>
+
+        <Route path="promote-user">
+            <PromoteUser/>
         </Route>
     </main>
 </Router>

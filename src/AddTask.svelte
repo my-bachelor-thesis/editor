@@ -5,22 +5,24 @@
     import * as helpers from "./helpers"
     import * as store from "./store"
     import {get} from "svelte/store"
-    import {GoEditors, PythonEditors} from "./add_task"
+    import {CppEditors, GoEditors, JavascriptEditors, PythonEditors} from "./add_task"
     import ShowEditors from "./partial_components/add_task/ShowEditors.svelte"
     import {EditorView} from "@codemirror/view";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
     import {tick} from "svelte";
 
-    // redirect if not admin
-    helpers.redirectIfNotAdmin()
+    // redirect if not logged in
+    helpers.redirectIfNotLoggedIn()
 
     const languages = [
-        {value: helpers.languages.Go, label: 'Go'},
-        {value: helpers.languages.Python, label: 'Python'},
+        {value: "go", label: 'Go'},
+        {value: "python", label: 'Python'},
+        {value: "javascript", label: 'Javascript'},
+        {value: "cpp", label: 'C++'},
     ]
     let selectedLanguages = []
 
-    let isGoEditors = false, isPythonEditors = false
+    let isGoEditors = false, isPythonEditors = false, isJavascriptEditors = false, isCppEditors = false
 
     let postError = ""
 
@@ -50,16 +52,23 @@
                 errs["languages"] = "select at least one language"
             }
             if (isGoEditors && GoEditors.finalTest.state.doc.toString() === "") {
-                errs[helpers.languages.Go] = "final test can't be empty"
+                errs["go"] = "final test can't be empty"
             }
             if (isPythonEditors && PythonEditors.finalTest.state.doc.toString() === "") {
-                errs[helpers.languages.Python] = "final test can't be empty"
+                errs["python"] = "final test can't be empty"
+            }
+            if (isJavascriptEditors && JavascriptEditors.finalTest.state.doc.toString() === "") {
+                errs["javascript"] = "final test can't be empty"
+            }
+            if (isCppEditors && CppEditors.finalTest.state.doc.toString() === "") {
+                errs["cpp"] = "final test can't be empty"
             }
             return errs
         },
         onSubmit: values => {
             values.description = descriptionContent.html
 
+            // TODO: toto prerob
             let transformToList = function (language, type, arr) {
                 let res = []
                 for (const [id, editor] of arr) {
@@ -74,22 +83,22 @@
 
             if (isGoEditors) {
                 values.go_final_test = GoEditors.finalTest.state.doc.toString()
-                let solutions = transformToList(helpers.languages.Go, "solution", GoEditors.solutions)
+                let solutions = transformToList("go", "solution", GoEditors.solutions)
                 if (solutions.length > 0) {
                     values.go_solutions = solutions
                 }
-                let tests = transformToList(helpers.languages.Go, "test", GoEditors.tests)
+                let tests = transformToList("go", "test", GoEditors.tests)
                 if (tests.length > 0) {
                     values.go_tests = tests
                 }
             }
             if (isPythonEditors) {
                 values.python_final_test = PythonEditors.finalTest.state.doc.toString()
-                let solutions = transformToList(helpers.languages.Python, "solution", PythonEditors.solutions)
+                let solutions = transformToList("python", "solution", PythonEditors.solutions)
                 if (solutions.length > 0) {
                     values.python_solutions = solutions
                 }
-                let tests = transformToList(helpers.languages.Python, "test", PythonEditors.tests)
+                let tests = transformToList("python", "test", PythonEditors.tests)
                 if (tests.length > 0) {
                     values.python_tests = tests
                 }
@@ -119,18 +128,24 @@
     // editors
     function showEditors(editorsClass, language) {
         switch (language) {
-            case helpers.languages.Go:
+            case "go":
                 isGoEditors = true
                 break
-            case helpers.languages.Python:
+            case "python":
                 isPythonEditors = true
+                break
+            case "javascript":
+                isJavascriptEditors = true
+                break
+            case "cpp":
+                isCppEditors = true
         }
 
         (async () => {
             await tick()
             let updateExtension = EditorView.updateListener.of((v) => {
                 if (v.docChanged) {
-                    if ($errors[language] !== undefined && $errors[language] !== "" && editorsClass.finalTest.state.doc.toString() !== "") {
+                    if ($errors[language] && editorsClass.finalTest.state.doc.toString() !== "") {
                         $errors[language] = ""
                     }
                 }
@@ -141,11 +156,19 @@
     }
 
     function showGoEditors() {
-        showEditors(GoEditors, helpers.languages.Go)
+        showEditors(GoEditors, "go")
     }
 
     function showPythonEditors() {
-        showEditors(PythonEditors, helpers.languages.Python)
+        showEditors(PythonEditors, "python")
+    }
+
+    function showJavascriptEditors() {
+        showEditors(JavascriptEditors, "javascript")
+    }
+
+    function showCppEditors() {
+        showEditors(CppEditors, "cpp")
     }
 
     function handleLanguageSelect(event) {
@@ -153,14 +176,18 @@
         if (selectedLanguages === null) {
             isGoEditors = false
             isPythonEditors = false
+            isJavascriptEditors = false
+            isCppEditors = false
             GoEditors.reset()
             PythonEditors.reset()
+            JavascriptEditors.reset()
+            CppEditors.reset()
         } else {
             selectedLanguages = selectedLanguages.map(x => x.value)
-            if ($errors["languages"] !== undefined && $errors["languages"] !== "" && selectedLanguages.length !== 0) {
+            if ($errors["languages"] && selectedLanguages.length !== 0) {
                 $errors["languages"] = ""
             }
-            if (selectedLanguages.includes(helpers.languages.Go)) {
+            if (selectedLanguages.includes("go")) {
                 if (!isGoEditors) {
                     showGoEditors()
                 }
@@ -168,13 +195,29 @@
                 isGoEditors = false
                 GoEditors.reset()
             }
-            if (selectedLanguages.includes(helpers.languages.Python)) {
+            if (selectedLanguages.includes("python")) {
                 if (!isPythonEditors) {
                     showPythonEditors()
                 }
             } else {
                 isPythonEditors = false
                 PythonEditors.reset()
+            }
+            if (selectedLanguages.includes("javascript")) {
+                if (!isJavascriptEditors) {
+                    showJavascriptEditors()
+                }
+            } else {
+                isJavascriptEditors = false
+                JavascriptEditors.reset()
+            }
+            if (selectedLanguages.includes("cpp")) {
+                if (!isCppEditors) {
+                    showCppEditors()
+                }
+            } else {
+                isCppEditors = false
+                CppEditors.reset()
             }
         }
     }
@@ -224,11 +267,19 @@
         {/if}
 
         {#if isGoEditors}
-            <ShowEditors lang={helpers.languages.Go} error={$errors.go}/>
+            <ShowEditors lang="go" error={$errors.go}/>
         {/if}
 
         {#if isPythonEditors}
-            <ShowEditors lang={helpers.languages.Python} error={$errors.python}/>
+            <ShowEditors lang="python" error={$errors.python}/>
+        {/if}
+
+        {#if isJavascriptEditors}
+            <ShowEditors lang="javascript" error={$errors.javascript}/>
+        {/if}
+
+        {#if isCppEditors}
+            <ShowEditors lang="cpp" error={$errors.cpp}/>
         {/if}
 
         <br><br>

@@ -26,3 +26,15 @@ export class PythonEditors extends Editors {
         super()
     }
 }
+
+export class JavascriptEditors extends Editors {
+    constructor() {
+        super()
+    }
+}
+
+export class CppEditors extends Editors {
+    constructor() {
+        super()
+    }
+}
