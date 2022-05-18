@@ -10,6 +10,7 @@
     import {EditorView} from "@codemirror/view";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
     import {tick} from "svelte";
+    import {navigate} from "svelte-navigator";
 
     // redirect if not logged in
     helpers.redirectIfNotLoggedIn()
@@ -68,49 +69,74 @@
         onSubmit: values => {
             values.description = descriptionContent.html
 
-            // TODO: toto prerob
             let transformToList = function (language, type, arr) {
                 let res = []
                 for (const [id, editor] of arr) {
                     let editorContent = editor.state.doc.toString()
                     if (editorContent) {
                         let name = document.getElementById(`name-of-${language}-${type}-${id}`).value
-                        res.push({name: name, code: editorContent})
+                        res.push({name: name, code: editorContent, language: language})
                     }
                 }
                 return res
             }
 
+            values.final_tests = []
+            values.pubic_tests = []
+            values.public_solutions = []
+
             if (isGoEditors) {
-                values.go_final_test = GoEditors.finalTest.state.doc.toString()
+                values.final_tests.push({code: GoEditors.finalTest.state.doc.toString(), language: "go"})
                 let solutions = transformToList("go", "solution", GoEditors.solutions)
                 if (solutions.length > 0) {
-                    values.go_solutions = solutions
+                    values.public_solutions.push(...solutions)
                 }
                 let tests = transformToList("go", "test", GoEditors.tests)
                 if (tests.length > 0) {
-                    values.go_tests = tests
+                    values.pubic_tests.push(...tests)
                 }
             }
             if (isPythonEditors) {
-                values.python_final_test = PythonEditors.finalTest.state.doc.toString()
+                values.final_tests.push({code: PythonEditors.finalTest.state.doc.toString(), language: "python"})
                 let solutions = transformToList("python", "solution", PythonEditors.solutions)
                 if (solutions.length > 0) {
-                    values.python_solutions = solutions
+                    values.public_solutions.push(...solutions)
                 }
                 let tests = transformToList("python", "test", PythonEditors.tests)
                 if (tests.length > 0) {
-                    values.python_tests = tests
+                    values.pubic_tests.push(...tests)
                 }
             }
+            if (isJavascriptEditors) {
+                values.final_tests.push({
+                    code: JavascriptEditors.finalTest.state.doc.toString(),
+                    language: "javascript"
+                })
+                let solutions = transformToList("javascript", "solution", JavascriptEditors.solutions)
+                if (solutions.length > 0) {
+                    values.public_solutions.push(...solutions)
+                }
+                let tests = transformToList("javascript", "test", JavascriptEditors.tests)
+                if (tests.length > 0) {
+                    values.pubic_tests.push(...tests)
+                }
+            }
+            if (isCppEditors) {
+                values.final_tests.push({code: CppEditors.finalTest.state.doc.toString(), language: "cpp"})
+                let solutions = transformToList("cpp", "solution", CppEditors.solutions)
+                if (solutions.length > 0) {
+                    values.public_solutions.push(...solutions)
+                }
+                let tests = transformToList("cpp", "test", CppEditors.tests)
+                if (tests.length > 0) {
+                    values.pubic_tests.push(...tests)
+                }
+            }
+
             postError = ""
             helpers.postJson(`${get(store.url)}/add-task/form`, JSON.stringify(values)).then(
                 () => {
-                    let msg = "the task was added"
-                    if (!get(store.isAdmin)) {
-                        msg = "the task was submitted for a review"
-                    }
-                    helpers.redirectToHomeWithMessage(msg)
+                    navigate("publish?msg=The new task is ready to be published")
                 }).catch(err => postError = err)
         }
     })
