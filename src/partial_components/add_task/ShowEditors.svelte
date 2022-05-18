@@ -3,6 +3,7 @@
     import {CppEditors, GoEditors, JavascriptEditors, PythonEditors} from "../../add_task"
     import {Button} from "sveltestrap";
     import * as codeExamples from "./codeExamples"
+    import HelpMessage from "../messages/HelpMessage.svelte";
 
     export let lang, error
 
@@ -186,7 +187,9 @@
 <h3>{helpers.languageName(lang)} editors</h3>
 <br>
 <div>
-    <h5 style="display:inline-block;margin-right: 1%;">Final test</h5>
+    <h5 style="display:inline-block;">Final test</h5>
+    <HelpMessage imageWidthPercentage="120" style="display:inline-block;" text="Users can participate in the task statistics if they solve the final test.
+        You have to write it for every selected language."/>
     <Button style="display:inline-block;" outline size="sm" on:click={() => insertExample("test")} type="button">Insert
         example test
     </Button>
@@ -199,5 +202,7 @@
     <br>
     <button on:click={addSolutionFunc} type="button">Add public solution</button>
     <button on:click={addTestFunc} type="button">Add public test</button>
+    <HelpMessage imageWidthPercentage="140" text="Users can participate in the task statistics if they solve the final test.
+        You have to write it for every selected language"/>
     <br>
 </div>

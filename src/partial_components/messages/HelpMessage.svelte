@@ -1,12 +1,15 @@
 <script>
-    import { Tooltip } from 'sveltestrap';
+    import {Tooltip} from 'sveltestrap';
 
     let img
-    export let text
+    export let text, imageWidthPercentage
+    if (!imageWidthPercentage) {
+        imageWidthPercentage = 100
+    }
 </script>
 
 <div class="tooltip-wrapper">
-    <img src="images/question-circle.svg" alt="tooltip" bind:this={img}>
+    <img width="{imageWidthPercentage}%" src="images/question-circle.svg" alt="tooltip" bind:this={img}>
     <Tooltip target={img}>{text}</Tooltip>
 </div>
 

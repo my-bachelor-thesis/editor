@@ -126,7 +126,7 @@
 
     // title variable is used for title tooltip
 
-    let title
+    let titleTooltip
 
     // handling when solution changes
 
@@ -256,16 +256,16 @@
     {#await initValues}
         <p>Loading title...</p>
     {:then task}
-        <div style="display: inline-block;" bind:this={title}>
-            <h1 style="white-space: nowrap;">{task.title}<span id="title-difficulty"
-                                                               class="{task.difficulty}">({task.difficulty})</span></h1>
-        </div>
+        <h1 style="white-space: nowrap;">{task.title}<span id="title-difficulty"
+                                                           class="{task.difficulty}">({task.difficulty})</span>
+            <img src="images/question-circle.svg" alt="tooltip" bind:this={titleTooltip} width="2%">
+        </h1>
         <br>
-        <Tooltip target={title} placement="right">
+        <Tooltip target={titleTooltip} placement="right">
             <strong>Added on:</strong> {task.added_on}
             <strong>Author:</strong> {task.author}
             {#if get(store.isAdmin)}
-                <strong>Approver:</strong> {task.approver}
+                <strong>Approver:</strong>{task.approver} (only admin can see the approver)
             {/if}
         </Tooltip>
 
@@ -419,6 +419,6 @@
 <style>
     #title-difficulty {
         font-size: 70%;
-        margin-left: 3%;
+        margin-left: 0.5%;
     }
 </style>

@@ -11,6 +11,7 @@
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
     import {tick} from "svelte";
     import {navigate} from "svelte-navigator";
+    import HelpMessage from "./partial_components/messages/HelpMessage.svelte";
 
     // redirect if not logged in
     helpers.redirectIfNotLoggedIn()
@@ -253,18 +254,25 @@
     <link href="/css/quill.snow.css" rel="stylesheet">
 </svelte:head>
 
-<h1 class="small-margin">Add a task</h1>
+<h1 class="small-margin">Add a task
+    <HelpMessage imageWidthPercentage="200"
+                 text="You can add your own task here. You have to choose at least one language in which the task can be solved.
+                 You can read more about which testing libraries are used on the About page"/>
+</h1>
 
 <ErrorMessage msg={postError}/>
 
 <div class="form">
     <form on:submit={handleSubmit}>
-        <h3>title</h3>
-        <input bind:value={$form.title} on:change={handleChange} id="title" name="title" type="text"
-               placeholder="Title">
-        {#if $errors.title}
-            <div class="error">{$errors.title}</div>
-        {/if}
+
+        <div style="margin-bottom: 1%">
+            <h3>title</h3>
+            <input bind:value={$form.title} on:change={handleChange} id="title" name="title" type="text"
+                   placeholder="Title">
+            {#if $errors.title}
+                <div class="error">{$errors.title}</div>
+            {/if}
+        </div>
 
         <br>
         <h3>select difficulty</h3>
@@ -309,7 +317,8 @@
         {/if}
 
         <br><br>
-        <button>Submit</button>
+        <button>Save the solution</button>
+        <HelpMessage imageWidthPercentage="120" text="Saved task will appear on the 'Not published' page"/>
     </form>
 </div>
 

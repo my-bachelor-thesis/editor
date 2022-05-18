@@ -6,6 +6,7 @@
     import DetailsFromRunErr from "./show_result_partial/DetailsFromRunErr.svelte";
     import ErrorMessage from "../messages/ErrorMessage.svelte";
     import {get} from "svelte/store";
+    import HelpMessage from "../messages/HelpMessage.svelte";
 
     export let language, url, taskId, selectedSolutionStore, selectedTestStore, showTestResult, updateTestId
 
@@ -119,6 +120,7 @@
         <button type="button" on:click={runSolution}>
             Run {language.number}. language
         </button>
+        <HelpMessage imageWidthPercentage="140" text="Run solution and test"/>
 
         <br><br>
 

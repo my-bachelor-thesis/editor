@@ -156,7 +156,7 @@
                class="no-wrap"><b>{language.number === 1 ? "First" : "Second"}
             language:</b></label>
 
-        <HelpMessage text="select a language for which you want to show available solutions and tests"/>
+        <HelpMessage text="Select a language for which you want to show available solutions and tests"/>
 
         <Select id="language{language.number}-picker-select"
                 items={transformLanguagesForSelector(initValues.languages)}
