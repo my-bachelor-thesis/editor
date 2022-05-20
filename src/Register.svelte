@@ -23,6 +23,15 @@
         })
     }
 
+    function checkEmailForUniqueness(email) {
+        helpers.isValidEmail(email).then(exists => {
+            $errors.email = ""
+            if (exists) {
+                $errors.email = "email already exists"
+            }
+        })
+    }
+
     let postError = ""
 
     const {form, errors, state, handleChange, handleSubmit} = createForm({
@@ -51,6 +60,8 @@
                 errs["email"] = "email can't be empty"
             } else if (!validateEmail(values.email)) {
                 errs["email"] = "email is not valid"
+            } else {
+                checkEmailForUniqueness(values.email)
             }
             if (values.password === "") {
                 errs["password"] = "password can't be empty"

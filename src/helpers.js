@@ -64,6 +64,12 @@ export async function isValidUsername(username) {
     return res === "true"
 }
 
+export async function isValidEmail(email) {
+    let res = ""
+    res = await fetchJson(`${url}/register/is-valid-email/${email}`)
+    return res === "true"
+}
+
 function parseJwt(token) {
     let base64Url = token.split('.')[1]
     let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
