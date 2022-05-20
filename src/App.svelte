@@ -26,6 +26,7 @@
     import About from "./About.svelte";
     import AccountSettings from "./AccountSettings.svelte";
     import PromoteUser from "./PromoteUser.svelte";
+    import Statistic from "./Statistic.svelte";
 
     helpers.setStorage()
 
@@ -105,7 +106,7 @@
                         <DropdownMenu end>
 
                             <DropdownItem>
-                                <Link to="approve"><span class="navbar-text">Tasks to approve</span></Link>
+                                <Link to="approve"><span class="navbar-text">Tasks for approval</span></Link>
                             </DropdownItem>
 
                             <DropdownItem>
@@ -164,6 +165,10 @@
 
         <Route path="promote-user">
             <PromoteUser/>
+        </Route>
+
+        <Route path="statistic">
+            <Statistic/>
         </Route>
     </main>
 </Router>

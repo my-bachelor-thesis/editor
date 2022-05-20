@@ -223,3 +223,7 @@ export function redirectIfNotAdmin() {
         navigate("/?msg=You have to be admin to do that")
     }
 }
+
+export function isLanguageInterpreted(lang) {
+    return !["go", "cpp"].includes(lang);
+}

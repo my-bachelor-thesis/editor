@@ -317,7 +317,7 @@
         {/if}
 
         <br><br>
-        <button>Save the solution</button>
+        <button>Save the task</button>
         <HelpMessage imageWidthPercentage="120" text="Saved task will appear on the 'Not published' page"/>
     </form>
 </div>

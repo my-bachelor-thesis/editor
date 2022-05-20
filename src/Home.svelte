@@ -27,7 +27,7 @@
             <br>
             <Container>
                 {#each tasks as task}
-                    <Task task={task}/>
+                    <Task task={task} showStatistic={true}/>
                     <hr>
                 {/each}
             </Container>
