@@ -8,7 +8,7 @@
         document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`
     }
 
-    for (let cookie of ["auth", "username", "first_name", "last_name"]) {
+    for (let cookie of ["auth", "username", "first_name", "last_name", "email"]) {
         deleteCookie(cookie)
     }
 

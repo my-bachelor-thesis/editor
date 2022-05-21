@@ -5,10 +5,10 @@
     import {get} from "svelte/store";
     import * as store from "../../store";
 
-    export let username, postError, message
+    export let postError, message
 
     function checkUsernameForUniqueness(name) {
-        if (username === name) {
+        if (get(store.username) === name) {
             return
         }
         helpers.isValidUsername(name).then(exists => {
@@ -23,7 +23,7 @@
         initialValues: {
             first_name: get(store.firstName),
             last_name: get(store.lastName),
-            username: username,
+            username: get(store.username),
         },
         validate: values => {
             let errs = {};
@@ -49,7 +49,6 @@
                     document.cookie = `first_name=${values.first_name}`
                     document.cookie = `last_name=${values.last_name}`
                     document.cookie = `username=${values.username}`
-                    username = values.username
                     message = "updated successfully"
                 })
                 .catch(

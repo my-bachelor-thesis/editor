@@ -4,15 +4,7 @@
     import * as store from "./store"
     import {get} from "svelte/store"
     import Form from "./partial_components/forms/Form.svelte"
-    import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
-
-    function validateEmail(email) {
-        return String(email)
-            .toLowerCase()
-            .match(
-                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-            )
-    }
+    import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte"
 
     function checkUsernameForUniqueness(username) {
         helpers.isValidUsername(username).then(exists => {
@@ -58,13 +50,15 @@
             }
             if (values.email === "") {
                 errs["email"] = "email can't be empty"
-            } else if (!validateEmail(values.email)) {
+            } else if (!helpers.validateEmail(values.email)) {
                 errs["email"] = "email is not valid"
             } else {
                 checkEmailForUniqueness(values.email)
             }
             if (values.password === "") {
                 errs["password"] = "password can't be empty"
+            } else if (values.password && values.password.length < 5) {
+                errs["password"] = "password is too short"
             }
             if ($form.password !== $form.repeated_password) {
                 errs["repeated_password"] = "passwords don't match"
@@ -74,7 +68,7 @@
         onSubmit: values => {
             postError = ""
             helpers.postJson(`${get(store.url)}/register/form`, JSON.stringify(values)).then(
-                () => helpers.redirectToHomeWithMessage("account registered")).catch((err) => postError = err
+                () => helpers.redirectToHomeWithMessage("Account registered. Please confirm your email")).catch((err) => postError = err
             )
         }
     })

@@ -1,27 +1,24 @@
 <script>
-    import Form from "../forms/Form.svelte"
     import {createForm} from "svelte-forms-lib";
-    import * as helpers from "../../helpers";
+    import * as helpers from "./helpers";
     import {get} from "svelte/store";
-    import * as store from "../../store";
+    import * as store from "./store";
+    import Form from "./partial_components/forms/Form.svelte";
+    import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
-    export let postError, message
+    let postError
+
+    const token = new URLSearchParams(window.location.search).get("token")
 
     const {form, errors, state, handleChange, handleSubmit} = createForm({
         initialValues: {
-            old_password: "",
             new_password: "",
             repeat_password: "",
         },
         validate: values => {
             let errs = {};
-            if (values.old_password === "") {
-                errs["old_password"] = "old password can't be empty"
-            }
             if (values.new_password === "") {
-                errs["new_password"] = "new password can't be empty"
-            } else if ($form.new_password === $form.old_password) {
-                errs["new_password"] = "new password has to be different from the old one"
+                errs["new_password"] = "old password can't be empty"
             } else if (values.new_password && values.new_password.length < 5) {
                 errs["new_password"] = "new password is too short"
             }
@@ -33,9 +30,12 @@
         onSubmit: values => {
             console.log("(-)", values)
             postError = ""
-            message = ""
-            helpers.postJson(`${get(store.url)}/account-setting/update-password`, JSON.stringify(values)).then(
-                () => message = "updated successfully")
+            helpers.postJson(`${get(store.url)}/do-password-reset`, JSON.stringify({
+                new_password: values.new_password,
+                repeat_password: values.repeat_password,
+                token: token
+            })).then(
+                () => helpers.redirectToHomeWithMessage("Password reset successfully. You can now log in"))
                 .catch(
                     err => postError = err
                 )
@@ -43,14 +43,11 @@
     });
 </script>
 
+<h1 class="small-margin">Password reset</h1>
 
-<Form submitFunc={handleSubmit} handleFunc={handleChange} submitText="Update" args={[
-        {
-            label: "old password",
-            error: $errors.old_password,
-            value: $form.old_password,
-            type: "password",
-        },
+<ErrorMessage msg={postError}/>
+
+<Form submitFunc={handleSubmit} handleFunc={handleChange} submitText="Reset" args={[
         {
             label: "new password",
             error: $errors.new_password,
@@ -64,3 +61,4 @@
             type: "password",
         }
     ]}/>
+

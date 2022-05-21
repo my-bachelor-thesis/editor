@@ -6,6 +6,7 @@
     import Form from "./partial_components/forms/Form.svelte";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
     import SuccessMessage from "./partial_components/messages/SuccessMessage.svelte";
+    import {navigate} from "svelte-navigator";
 
     let postError = ""
 
@@ -62,4 +63,14 @@
             type: "password",
         },
     ]}/>
+
+<a id="reset-password" class="small-margin" href="#/"
+   on:click|preventDefault={() => navigate("reset-password-request")}>If you forgot your password click here</a>
+
+
+<style>
+    #reset-password {
+        font-size: larger;
+    }
+</style>
 

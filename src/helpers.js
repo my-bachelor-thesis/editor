@@ -37,6 +37,9 @@ export async function postJson(url, content) {
     let data
     try {
         data = await res.json()
+        if (data.message) {
+            data = data.message
+        }
     } catch (_) {
     }
 
@@ -105,6 +108,7 @@ export function setStorage() {
         store.username.set(cookies.get("username"))
         store.firstName.set(cookies.get("first_name"))
         store.lastName.set(cookies.get("last_name"))
+        store.email.set(cookies.get("email"))
     }
 }
 
@@ -232,4 +236,12 @@ export function redirectIfNotAdmin() {
 
 export function isLanguageInterpreted(lang) {
     return !["go", "cpp"].includes(lang);
+}
+
+export function validateEmail(email) {
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        )
 }

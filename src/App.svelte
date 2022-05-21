@@ -27,6 +27,9 @@
     import AccountSettings from "./AccountSettings.svelte";
     import PromoteUser from "./PromoteUser.svelte";
     import Statistic from "./Statistic.svelte";
+    import ResetPasswordRequest from "./ResetPasswordRequest.svelte";
+    import VerifyEmail from "./VerifyEmail.svelte";
+    import PasswordReset from "./PasswordReset.svelte";
 
     helpers.setStorage()
 
@@ -165,6 +168,18 @@
 
         <Route path="promote-user">
             <PromoteUser/>
+        </Route>
+
+        <Route path="email-verification">
+            <VerifyEmail/>
+        </Route>
+
+        <Route path="reset-password-request">
+            <ResetPasswordRequest/>
+        </Route>
+
+        <Route path="password-reset">
+            <PasswordReset/>
         </Route>
 
         <Route path="statistic">

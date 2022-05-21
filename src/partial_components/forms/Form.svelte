@@ -11,12 +11,11 @@
 </script>
 
 <div class="form">
-    <form on:submit={submitFunc}>
+    <form on:submit={submitFunc} onkeydown="return event.key !== 'Enter';">
         {#each args as arg}
-            <InputField label={arg.label} error={arg.error} value={arg.value} type={arg.type}
+            <InputField label={arg.label} error={arg.error} bind:value={arg.value} type={arg.type}
                         handleFunc={handleFunc}/>
         {/each}
-        <br>
         <button disabled={numberOfErrors > 0}>{submitText}</button>
     </form>
 </div>
