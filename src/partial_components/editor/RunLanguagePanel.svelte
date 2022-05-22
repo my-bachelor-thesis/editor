@@ -19,7 +19,7 @@
     async function fetchTestResults(solution, test, urlParam, hashId) {
         let body = JSON.stringify({
             solution: solution,
-            solution_id: get(selectedSolutionStore).value,
+            solution_id: get(selectedSolutionStore) ? get(selectedSolutionStore).value : 0,
             test: test,
             test_id: get(selectedTestStore).value,
             task_id: parseInt(taskId),

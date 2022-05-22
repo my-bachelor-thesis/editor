@@ -9,7 +9,7 @@
     import ShowEditors from "./partial_components/add_task/ShowEditors.svelte"
     import {EditorView} from "@codemirror/view";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
-    import {tick} from "svelte";
+    import {onMount, tick} from "svelte";
     import {navigate} from "svelte-navigator";
     import HelpMessage from "./partial_components/messages/HelpMessage.svelte";
 
@@ -199,6 +199,7 @@
     }
 
     function handleLanguageSelect(event) {
+        console.log(event.detail)
         selectedLanguages = event.detail
         if (selectedLanguages === null) {
             isGoEditors = false
@@ -248,12 +249,27 @@
             }
         }
     }
+
+    // let quillEditor
+
+    $form.title = "aaa"
+    $form.difficulty = "hard"
+
+    let languagesInSelector
+    onMount(() => {
+        const editorDiv = document.getElementById("editor")
+        editorDiv.querySelector(":scope p").innerHTML = "<strong>text</strong>"
+        // isGoEditors = true
+        languagesInSelector = [{value: 'go', label: 'Go'}]
+        // handleLanguageSelect({detail: [{value: "go"}]})
+    })
+
+
 </script>
 
 <svelte:head>
     <link href="/css/quill.snow.css" rel="stylesheet">
 </svelte:head>
-
 <h1 class="small-margin">Add a task
     <HelpMessage imageWidthPercentage="200"
                  text="You can add your own task here. You have to choose at least one language in which the task can be solved.
@@ -287,7 +303,7 @@
 
         <br><br>
         <h3>description (first X characters will be used as a preview for the description)</h3>
-        <div class="editor" use:quill={quillOptions} on:text-change={e => descriptionContent = e.detail}></div>
+        <div id="editor" use:quill={quillOptions} on:text-change={e => descriptionContent = e.detail}></div>
         {#if $errors.description}
             <div class="error">{$errors.description}</div>
         {/if}
@@ -295,7 +311,7 @@
         <br>
         <h3>Select languages</h3>
 
-        <Select on:select={handleLanguageSelect} items={languages} isMulti={true}/>
+        <Select on:select={handleLanguageSelect} items={languages} isMulti={true} bind:value={languagesInSelector}/>
         {#if $errors.languages}
             <div class="error">{$errors.languages}</div>
         {/if}

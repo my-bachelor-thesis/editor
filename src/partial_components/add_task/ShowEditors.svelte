@@ -4,12 +4,15 @@
     import {Button} from "sveltestrap";
     import * as codeExamples from "./codeExamples"
     import HelpMessage from "../messages/HelpMessage.svelte";
+    import {tick} from "svelte";
 
     export let lang, error
 
     // index argument is not mandatory
     function insertExample(type, index) {
         let editor, code
+
+        console.log(type, index, "aaaaaaa")
 
         switch (lang) {
             case "go":
@@ -180,6 +183,18 @@
             addSolutionFunc = addCppSolutionEditor
             addTestFunc = addCppTestEditor
     }
+
+    (async () => {
+        await tick()
+        insertExample("test")
+        addEditor(GoEditors, "go", "solution")
+        insertExample("solution", 1)
+        document.getElementById("name-of-go-solution-1").value = "aaa"
+    })()
+
+    // $: if (GoEditors.finalTest) {
+    //     console.log("final", GoEditors.finalTest)
+    // }
 </script>
 
 
