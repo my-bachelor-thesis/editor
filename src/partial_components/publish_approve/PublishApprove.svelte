@@ -6,6 +6,7 @@
     import ErrorMessage from "../../partial_components/messages/ErrorMessage.svelte";
     import {Container} from "sveltestrap";
     import Task from "../../partial_components/tasks/Task.svelte";
+    import {navigate} from "svelte-navigator";
 
     export let title, buttonText, getTasksFromUrl, postTasksToUrl, successMsg
 
@@ -22,6 +23,10 @@
                 tasks = [...tasks]
             }).catch((err) => postError = err
         )
+    }
+
+    function editTaskButton(id) {
+        navigate(`edit-task?id=${id}`)
     }
 </script>
 
@@ -40,6 +45,9 @@
                 {#each tasks as task}
                     <Task task={task}/>
                     <button on:click={() => handleButton(task.id)}>{buttonText}</button>
+                    {#if buttonText === "Publish"}
+                        <button on:click={() => editTaskButton(task.id)}>Edit task</button>
+                    {/if}
                     <hr>
                 {/each}
             </Container>
@@ -47,4 +55,6 @@
     {:else}
         <div class="not-found-err">No tasks found</div>
     {/if}
+{:catch error}
+    <p style="color: red">{error.message}</p>
 {/await}

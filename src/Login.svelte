@@ -9,6 +9,7 @@
     import {navigate} from "svelte-navigator";
 
     let postError = ""
+    let message = new URLSearchParams(window.location.search).get('msg')
 
     const {form, errors, state, handleChange, handleSubmit} = createForm({
         initialValues: {
@@ -33,6 +34,7 @@
         },
         onSubmit: values => {
             postError = ""
+            message = ""
             helpers.postJson(`${get(store.url)}/login/form`, JSON.stringify(values)).then(
                 () => {
                     helpers.setStorage()
@@ -40,8 +42,6 @@
                 }).catch(err => postError = err)
         }
     })
-
-    const message = new URLSearchParams(window.location.search).get('msg')
 </script>
 
 <h1 class="small-margin">Login</h1>

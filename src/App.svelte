@@ -30,6 +30,7 @@
     import ResetPasswordRequest from "./ResetPasswordRequest.svelte";
     import VerifyEmail from "./VerifyEmail.svelte";
     import PasswordReset from "./PasswordReset.svelte";
+    import EditTask from "./EditTask.svelte";
 
     helpers.setStorage()
 
@@ -74,7 +75,7 @@
                 {:else}
                     <NavItem>
                         <NavLink>
-                            <Link to="not-published"><span class="navbar-text">Not published</span></Link>
+                            <Link to="not-published"><span class="navbar-text">My tasks</span></Link>
                         </NavLink>
                     </NavItem>
 
@@ -180,6 +181,10 @@
 
         <Route path="password-reset">
             <PasswordReset/>
+        </Route>
+
+        <Route path="edit-task">
+            <EditTask/>
         </Route>
 
         <Route path="statistic">

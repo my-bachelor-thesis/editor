@@ -5,13 +5,20 @@
     import * as helpers from "./helpers"
     import * as store from "./store"
     import {get} from "svelte/store"
-    import {CppEditors, GoEditors, JavascriptEditors, PythonEditors} from "./add_task"
+    import {CppEditors, GoEditors, JavascriptEditors, PythonEditors} from "./partial_components/add_task/editors"
     import ShowEditors from "./partial_components/add_task/ShowEditors.svelte"
     import {EditorView} from "@codemirror/view";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
     import {onMount, tick} from "svelte";
     import {navigate} from "svelte-navigator";
     import HelpMessage from "./partial_components/messages/HelpMessage.svelte";
+
+    export let savedTask
+
+    // reset all
+    for (let editor of [CppEditors, GoEditors, JavascriptEditors, PythonEditors]) {
+        editor.reset()
+    }
 
     // redirect if not logged in
     helpers.redirectIfNotLoggedIn()
@@ -83,9 +90,10 @@
             }
 
             values.final_tests = []
-            values.pubic_tests = []
+            values.public_tests = []
             values.public_solutions = []
 
+// TODO: move this to class
             if (isGoEditors) {
                 values.final_tests.push({code: GoEditors.finalTest.state.doc.toString(), language: "go"})
                 let solutions = transformToList("go", "solution", GoEditors.solutions)
@@ -94,7 +102,7 @@
                 }
                 let tests = transformToList("go", "test", GoEditors.tests)
                 if (tests.length > 0) {
-                    values.pubic_tests.push(...tests)
+                    values.public_tests.push(...tests)
                 }
             }
             if (isPythonEditors) {
@@ -105,7 +113,7 @@
                 }
                 let tests = transformToList("python", "test", PythonEditors.tests)
                 if (tests.length > 0) {
-                    values.pubic_tests.push(...tests)
+                    values.public_tests.push(...tests)
                 }
             }
             if (isJavascriptEditors) {
@@ -119,7 +127,7 @@
                 }
                 let tests = transformToList("javascript", "test", JavascriptEditors.tests)
                 if (tests.length > 0) {
-                    values.pubic_tests.push(...tests)
+                    values.public_tests.push(...tests)
                 }
             }
             if (isCppEditors) {
@@ -130,14 +138,17 @@
                 }
                 let tests = transformToList("cpp", "test", CppEditors.tests)
                 if (tests.length > 0) {
-                    values.pubic_tests.push(...tests)
+                    values.public_tests.push(...tests)
                 }
             }
 
             postError = ""
+            if (savedTask) {
+                values.task_id = parseInt(new URLSearchParams(window.location.search).get("id"))
+            }
             helpers.postJson(`${get(store.url)}/add-task/form`, JSON.stringify(values)).then(
                 () => {
-                    navigate("not-published?msg=The new task is ready to be published")
+                    navigate("not-published?msg=Saved and ready to be published")
                 }).catch(err => postError = err)
         }
     })
@@ -153,8 +164,8 @@
     }
 
     // editors
-    function showEditors(editorsClass, language) {
-        switch (language) {
+    function showEditors(editorsClass) {
+        switch (editorsClass.languageName) {
             case "go":
                 isGoEditors = true
                 break
@@ -172,30 +183,15 @@
             await tick()
             let updateExtension = EditorView.updateListener.of((v) => {
                 if (v.docChanged) {
-                    if ($errors[language] && editorsClass.finalTest.state.doc.toString() !== "") {
-                        $errors[language] = ""
+                    if ($errors[editorsClass.languageName] && editorsClass.finalTest.state.doc.toString() !== "") {
+                        $errors[editorsClass.languageName] = ""
                     }
                 }
             })
-            let editor = helpers.Editor.newEditor(language, document.getElementById(`${language}-editor-final-test`), updateExtension)
+            let editor = helpers.Editor.newEditor(editorsClass.languageName,
+                document.getElementById(`${editorsClass.languageName}-editor-final-test`), updateExtension)
             editorsClass.finalTest = editor
         })()
-    }
-
-    function showGoEditors() {
-        showEditors(GoEditors, "go")
-    }
-
-    function showPythonEditors() {
-        showEditors(PythonEditors, "python")
-    }
-
-    function showJavascriptEditors() {
-        showEditors(JavascriptEditors, "javascript")
-    }
-
-    function showCppEditors() {
-        showEditors(CppEditors, "cpp")
     }
 
     function handleLanguageSelect(event) {
@@ -217,7 +213,7 @@
             }
             if (selectedLanguages.includes("go")) {
                 if (!isGoEditors) {
-                    showGoEditors()
+                    showEditors(GoEditors)
                 }
             } else {
                 isGoEditors = false
@@ -225,7 +221,7 @@
             }
             if (selectedLanguages.includes("python")) {
                 if (!isPythonEditors) {
-                    showPythonEditors()
+                    showEditors(PythonEditors)
                 }
             } else {
                 isPythonEditors = false
@@ -233,7 +229,7 @@
             }
             if (selectedLanguages.includes("javascript")) {
                 if (!isJavascriptEditors) {
-                    showJavascriptEditors()
+                    showEditors(JavascriptEditors)
                 }
             } else {
                 isJavascriptEditors = false
@@ -241,7 +237,7 @@
             }
             if (selectedLanguages.includes("cpp")) {
                 if (!isCppEditors) {
-                    showCppEditors()
+                    showEditors(CppEditors)
                 }
             } else {
                 isCppEditors = false
@@ -250,18 +246,26 @@
         }
     }
 
-    // let quillEditor
-
-    $form.title = "aaa"
-    $form.difficulty = "hard"
-
     let languagesInSelector
+
     onMount(() => {
-        const editorDiv = document.getElementById("editor")
-        editorDiv.querySelector(":scope p").innerHTML = "<strong>text</strong>"
-        // isGoEditors = true
-        languagesInSelector = [{value: 'go', label: 'Go'}]
-        // handleLanguageSelect({detail: [{value: "go"}]})
+        console.log(savedTask)
+        if (savedTask) {
+            $form.title = savedTask.title
+            $form.difficulty = savedTask.difficulty
+
+            const editorDiv = document.getElementById("editor")
+            let pToReplace = editorDiv.querySelector(":scope p")
+            let newPDiv = document.createElement("div")
+            newPDiv.innerHTML = savedTask.description
+            let newP = newPDiv.firstElementChild
+            pToReplace.parentNode.replaceChild(newP, pToReplace)
+
+            languagesInSelector = savedTask.final_tests.map(x => ({
+                value: x.language,
+                label: helpers.languageName(x.language)
+            }))
+        }
     })
 
 
@@ -317,19 +321,19 @@
         {/if}
 
         {#if isGoEditors}
-            <ShowEditors lang="go" error={$errors.go}/>
+            <ShowEditors savedTask={savedTask} languageEditors={GoEditors} error={$errors.go}/>
         {/if}
 
         {#if isPythonEditors}
-            <ShowEditors lang="python" error={$errors.python}/>
+            <ShowEditors savedTask={savedTask} languageEditors={PythonEditors} error={$errors.python}/>
         {/if}
 
         {#if isJavascriptEditors}
-            <ShowEditors lang="javascript" error={$errors.javascript}/>
+            <ShowEditors savedTask={savedTask} languageEditors={JavascriptEditors} error={$errors.javascript}/>
         {/if}
 
         {#if isCppEditors}
-            <ShowEditors lang="cpp" error={$errors.cpp}/>
+            <ShowEditors savedTask={savedTask} languageEditors={CppEditors} error={$errors.cpp}/>
         {/if}
 
         <br><br>
@@ -337,10 +341,3 @@
         <HelpMessage imageWidthPercentage="120" text="Saved task will appear on the 'Not published' page"/>
     </form>
 </div>
-
-<!--<style>-->
-<!--  :global(.cm-scroller) {-->
-<!--    overflow: auto;-->
-<!--    max-height: 400px !important;-->
-<!--  }-->
-<!--</style>-->

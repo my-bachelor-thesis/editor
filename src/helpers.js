@@ -162,33 +162,25 @@ export function languageName(lang) {
             return "Python"
         case "cpp":
             return "C++"
-        case "js":
-            return "Javascript"
         case "javascript":
             return "Javascript"
     }
 }
 
-function getIteratorForTransform(obj) {
-    if (obj instanceof Map) {
-        return obj.entries()
-    }
-    return Object.entries(obj)
-}
-
 export function makeSolutionLabel(solution) {
-    return `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.is_public ? "🌐" : ""}`
+    return `${solution.name === "" ? "" : solution.name + " - "}${solution.last_modified}${solution.public ? " 🌐" : ""}`
 }
 
-// solutions can be a map or an object
 export function transformSolutionsForSelect(solutions) {
     let res = []
+    if (!solutions) {
+        return res
+    }
 
-    let iterator = getIteratorForTransform(solutions)
-
-    for (const [id, solution] of iterator) {
+    console.log("solutions", solutions)
+    for (const solution of solutions) {
         res.push({
-            value: parseInt(id),
+            value: parseInt(solution.id),
             label: makeSolutionLabel(solution),
             public: solution.public,
             name: solution.name,
@@ -207,11 +199,17 @@ export function makeTestLabel(test) {
 export function transformTestsForSelect(tests) {
     let res = []
 
-    let iterator = getIteratorForTransform(tests)
+    if (!tests) {
+        return res
+    }
 
-    for (const [id, test] of iterator) {
+    console.log("tests", tests)
+
+    // let iterator = getIteratorForTransform(tests)
+
+    for (const test of tests) {
         res.push({
-            value: parseInt(id),
+            value: parseInt(test.id),
             label: makeTestLabel(test),
             final: test.final,
             public: test.public,

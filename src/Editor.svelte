@@ -188,11 +188,13 @@
     // handling when test changes
 
     async function updateTestId(userSolutionId, testId) {
-        let body = JSON.stringify({
-            user_solution_id: parseInt(userSolutionId),
-            test_id: parseInt(testId)
-        })
-        return helpers.postJson(`${url}/editor/change-testid-for-usersolution`, body)
+        if (userSolutionId) {
+            let body = JSON.stringify({
+                user_solution_id: parseInt(userSolutionId),
+                test_id: parseInt(testId)
+            })
+            return helpers.postJson(`${url}/editor/change-testid-for-usersolution`, body)
+        }
     }
 
 

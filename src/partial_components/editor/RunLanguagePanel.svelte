@@ -30,28 +30,30 @@
 
     function insertNewSolutionIntoSelector(solutionHash, data, test_id) {
         language.cache.solutionFromLastRun = solutionHash
-        let solution = new Map([[data.inserted_solution.id, {
+        let solution = [{
+            id: data.inserted_solution.id,
             name: "",
             last_modified: data.inserted_solution.last_modified,
             is_public: false,
             test_id: test_id
-        }]])
+        }]
         let transformedSolution = helpers.transformSolutionsForSelect(solution)[0]
         selectedSolutionStore.value.set(transformedSolution)
-        language.solutionsAndTestsSelector.solutions.push(transformedSolution)
+        language.solutionsAndTestsSelector.solutions.unshift(transformedSolution)
     }
 
     function insertNewTestIntoSelector(testHash, data) {
         language.cache.testFromLastRun = testHash
-        let test = new Map([[data.inserted_test.id, {
+        let test = [{
+            id: data.inserted_test.id,
             name: "",
             last_modified: data.inserted_test.last_modified,
             final: false,
             public: false
-        }]])
+        }]
         let transformedTest = helpers.transformTestsForSelect(test)[0]
         selectedTestStore.value.set(transformedTest)
-        language.solutionsAndTestsSelector.tests.push(transformedTest)
+        language.solutionsAndTestsSelector.tests.unshift(transformedTest)
     }
 
     function runSolution() {
