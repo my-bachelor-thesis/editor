@@ -50,6 +50,8 @@
             let errs = {}
             if (values.title === "") {
                 errs["title"] = "title is required"
+            } else if (values.title && values.title.length > 100) {
+                errs["title"] = "title is too long"
             }
             if (values.difficulty === "") {
                 errs["difficulty"] = "select difficulty"
@@ -148,7 +150,7 @@
             }
             helpers.postJson(`${get(store.url)}/add-task/form`, JSON.stringify(values)).then(
                 () => {
-                    navigate("not-published?msg=Saved and ready to be published")
+                    navigate("my-tasks?msg=Saved and ready to be published")
                 }).catch(err => postError = err)
         }
     })

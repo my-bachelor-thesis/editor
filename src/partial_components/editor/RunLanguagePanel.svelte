@@ -58,11 +58,20 @@
 
     function runSolution() {
         language.infoBoxContent = []
+        postError = ""
 
         let solutionInEditor = language.editors.solution.state.doc.toString()
         let solutionInEditorHash = md5(solutionInEditor)
         let testInEditor = language.editors.test.state.doc.toString()
         let testInEditorHash = md5(testInEditor)
+
+        if (!solutionInEditor) {
+            postError = "Solution is empty"
+            return
+        } else if (!testInEditor) {
+            postError = "Test is empty"
+            return
+        }
 
         let hashId = paringFunction(solutionInEditorHash, testInEditorHash)
 

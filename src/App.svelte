@@ -21,7 +21,7 @@
     } from 'sveltestrap';
     import * as store from "./store"
     import * as helpers from "./helpers"
-    import NotPublished from "./Publish.svelte"
+    import MyTasks from "./MyTasks.svelte"
     import Approve from "./Approve.svelte"
     import About from "./About.svelte";
     import AccountSettings from "./AccountSettings.svelte";
@@ -75,7 +75,7 @@
                 {:else}
                     <NavItem>
                         <NavLink>
-                            <Link to="not-published"><span class="navbar-text">My tasks</span></Link>
+                            <Link to="my-tasks"><span class="navbar-text">My tasks</span></Link>
                         </NavLink>
                     </NavItem>
 
@@ -151,8 +151,8 @@
             <Approve/>
         </Route>
 
-        <Route path="not-published">
-            <NotPublished/>
+        <Route path="my-tasks">
+            <MyTasks/>
         </Route>
 
         <Route path="logout">

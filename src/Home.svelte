@@ -5,26 +5,32 @@
     import SuccessMessage from "./partial_components/messages/SuccessMessage.svelte"
     import {Container} from "sveltestrap";
     import Task from "./partial_components/tasks/Task.svelte";
+    import FilterBar from "./partial_components/tasks/FilterBar.svelte";
 
     let tasksPromise = helpers.fetchJson(`${get(store.url)}/home/all-tasks`)
 
     const message = new URLSearchParams(window.location.search).get('msg')
+
+    let logoWidth = Math.floor(window.innerWidth / 1.5) + "px"
 </script>
 
 <SuccessMessage msg={message}/>
 
 <div id="logo-home-center">
-    <h1>My bachelor's thesis</h1>
-    <!--    TODO: dynamic height-->
-    <img src="images/logo-white.png" alt="" height="100px">
+    <h1 style="font-size: xxx-large">My bachelor's thesis</h1>
+    <img src="images/logo-white.png" alt="" width={logoWidth}>
 </div>
+
+<Container>
+    <FilterBar bind:tasksPromise={tasksPromise} endpoint="home/all-tasks"/>
+    <br>
+</Container>
 
 {#await tasksPromise}
     <p>Loading tasks...</p>
 {:then tasks}
     {#if tasks.length > 0}
         <div>
-            <br>
             <Container>
                 {#each tasks as task}
                     <Task task={task} showStatistic={true}/>
@@ -45,6 +51,7 @@
         text-align: center;
         margin: 4%;
     }
+
     #logo-home-center h1 {
         font-weight: bold;
         margin-bottom: 2%;

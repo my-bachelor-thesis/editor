@@ -11,7 +11,8 @@
 </script>
 
 <div class="form">
-    <form on:submit={submitFunc} onkeydown="return event.key !== 'Enter';">
+    <!--    <form on:submit={submitFunc} onkeydown="return event.key !== 'Enter';">-->
+    <form on:submit={submitFunc}>
         {#each args as arg}
             <InputField label={arg.label} error={arg.error} bind:value={arg.value} type={arg.type}
                         handleFunc={handleFunc}/>
