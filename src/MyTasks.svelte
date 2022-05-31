@@ -9,6 +9,9 @@
     import {navigate} from "svelte-navigator";
     import FilterBar from "./partial_components/tasks/FilterBar.svelte";
 
+    // redirect if not logged in
+    helpers.redirectIfNotLoggedIn()
+
     let postError = ""
     let message = new URLSearchParams(window.location.search).get('msg')
 

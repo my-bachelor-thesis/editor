@@ -25,7 +25,9 @@
             <div><b>Added on: </b>{task.added_on}</div>
         </div>
         {#if showStatistic}
-            <Button outline color="secondary" type="button" on:click={redirectToStatisticPage}>show stat</Button>
+            <Button style="margin-top: 0.5%" outline color="secondary" type="button" on:click={redirectToStatisticPage}>
+                show stat
+            </Button>
         {/if}
     </Col>
 </Row>

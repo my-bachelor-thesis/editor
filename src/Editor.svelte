@@ -11,8 +11,9 @@
     import LanguageSelector from "./partial_components/editor/LanguageSelector.svelte"
     import {GridStyleStore} from "./partial_components/editor/gridstyle";
     import {SelectedSolutionStore, SelectedTestStore} from "./partial_components/editor/selected";
-    import {Row, Tooltip} from "sveltestrap";
+    import {Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, Row, Tooltip} from "sveltestrap";
     import md5 from "blueimp-md5";
+    import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
     // redirect if not logged in
     helpers.redirectIfNotLoggedIn()
@@ -24,7 +25,11 @@
     let isSecondLanguageIsSelected = false
 
     const taskId = new URLSearchParams(window.location.search).get("id")
-    let initValues = getInitValues()
+    let initValuesPromise = getInitValues()
+
+    // insert initValues into a variable when they arrive
+    let initValues
+    initValuesPromise.then(res => initValues = res)
 
     let filters = {
         showFinalTests: false,
@@ -105,14 +110,6 @@
         let id2 = 0
         if (get(selectedSolutionLanguage2Store) && language2.name) {
             id2 = parseInt(get(selectedSolutionLanguage2Store).value)
-        }
-
-        let vals = {
-            task_id: parseInt(taskId),
-            user_solution_id_for_language_1: id1,
-            language_1: language1.name,
-            user_solution_id_for_language_2: id2,
-            language_2: language2.name,
         }
 
         helpers.postJson(`${get(store.url)}/editor/change-last-opened`, JSON.stringify({
@@ -246,8 +243,39 @@
     }
 
     // getting data about last opened solutions
-
     let lastOpened = helpers.fetchJson(`${url}/editor/get-last-opened/${taskId}`)
+
+    // unpublish modal
+
+    let unpublishModalError = ""
+    let reasonForUnpublish = ""
+    let isUnpublishModalOpened = false
+
+    const toggleUnpublishModal = () => {
+        isUnpublishModalOpened = !isUnpublishModalOpened
+        unpublishModalError = ""
+        reasonForUnpublish = ""
+    }
+
+    function unpublishTask() {
+        unpublishModalError = ""
+
+        if (!reasonForUnpublish) {
+            unpublishModalError = "no reason for unpublishing entered"
+            return
+        }
+
+        console.log(initValues)
+
+        helpers.postJson(`${get(store.url)}/not-approved/deny`, JSON.stringify({
+            reason: reasonForUnpublish,
+            author_id: parseInt(initValues.author_id),
+            task_id: parseInt(taskId)
+        })).then(() => {
+            toggleUnpublishModal()
+            helpers.redirectToHomeWithMessage("Unpublished successfully")
+        }).catch(err => unpublishModalError = err)
+    }
 </script>
 
 <!---------------------------------------- html starts here ---------------------------------------->
@@ -255,7 +283,7 @@
 <!-- initial info -->
 
 <div class="small-margin">
-    {#await initValues}
+    {#await initValuesPromise}
         <p>Loading title...</p>
     {:then task}
         <h1 style="white-space: nowrap;">{task.title}<span id="title-difficulty"
@@ -267,7 +295,7 @@
             <strong>Added on:</strong> {task.added_on}
             <strong>Author:</strong> {task.author}
             {#if get(store.isAdmin)}
-                <strong>Approver:</strong>{task.approver} (only admin can see the approver)
+                <strong>Approver:</strong> {task.approver} (only admin can see the approver)
             {/if}
         </Tooltip>
 
@@ -304,7 +332,7 @@
 <!-- selectors -->
 
 <div class="selector">
-    {#await initValues}
+    {#await initValuesPromise}
         <p>Loading languages...</p>
     {:then res}
 
@@ -386,7 +414,7 @@
 <!-- editors -->
 
 <CodeEditors
-        initValues={initValues}
+        initValues={initValuesPromise}
         language1={language1}
         language2={language2}
         --editor-height={editorHeight}
@@ -417,6 +445,26 @@
         bind:showTestResult={showTestResultLanguage2}
         updateTestId={updateTestId}
 />
+
+<!-- unpublish modal -->
+
+{#if get(store.isAdmin)}
+    <br>
+    <Button color="danger" outline on:click={toggleUnpublishModal}>Unpublish the task</Button>
+    <Modal isOpen={isUnpublishModalOpened} {toggleUnpublishModal}>
+        <ModalHeader {toggleUnpublishModal}>Give a reason for unpublishing (it will be sent to the user)
+        </ModalHeader>
+        <ModalBody>
+            <ErrorMessage msg={unpublishModalError}/>
+            <Input bind:value={reasonForUnpublish} type="textarea"
+                   placeholder="type the reason here"></Input>
+        </ModalBody>
+        <ModalFooter>
+            <Button color="primary" on:click={unpublishTask}>Unpublish</Button>
+            <Button color="secondary" on:click={toggleUnpublishModal}>Cancel</Button>
+        </ModalFooter>
+    </Modal>
+{/if}
 
 <style>
     #title-difficulty {
