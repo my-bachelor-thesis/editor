@@ -18,6 +18,18 @@ class Editors {
         this.finalTest = undefined
         this.idOfLastEditor = 1
     }
+
+    fillValuesArray(values, transformToList) {
+        values.final_tests.push({code: this.finalTest.state.doc.toString(), language: this.languageName})
+        let solutions = transformToList(this.languageName, "solution", this.solutions)
+        if (solutions.length > 0) {
+            values.public_solutions.push(...solutions)
+        }
+        let tests = transformToList(this.languageName, "test", this.tests)
+        if (tests.length > 0) {
+            values.public_tests.push(...tests)
+        }
+    }
 }
 
 class GoEditorsClass extends Editors {

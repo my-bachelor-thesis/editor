@@ -28,7 +28,6 @@
     }
 
     $: if (paginationFetch || currentPage) {
-        console.log("changing")
         isNextPage()
     }
 </script>

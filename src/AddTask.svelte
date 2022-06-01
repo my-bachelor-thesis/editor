@@ -95,53 +95,17 @@
             values.public_tests = []
             values.public_solutions = []
 
-// TODO: move this to class
             if (isGoEditors) {
-                values.final_tests.push({code: GoEditors.finalTest.state.doc.toString(), language: "go"})
-                let solutions = transformToList("go", "solution", GoEditors.solutions)
-                if (solutions.length > 0) {
-                    values.public_solutions.push(...solutions)
-                }
-                let tests = transformToList("go", "test", GoEditors.tests)
-                if (tests.length > 0) {
-                    values.public_tests.push(...tests)
-                }
+                GoEditors.fillValuesArray(values, transformToList)
             }
             if (isPythonEditors) {
-                values.final_tests.push({code: PythonEditors.finalTest.state.doc.toString(), language: "python"})
-                let solutions = transformToList("python", "solution", PythonEditors.solutions)
-                if (solutions.length > 0) {
-                    values.public_solutions.push(...solutions)
-                }
-                let tests = transformToList("python", "test", PythonEditors.tests)
-                if (tests.length > 0) {
-                    values.public_tests.push(...tests)
-                }
+                PythonEditors.fillValuesArray(values, transformToList)
             }
             if (isJavascriptEditors) {
-                values.final_tests.push({
-                    code: JavascriptEditors.finalTest.state.doc.toString(),
-                    language: "javascript"
-                })
-                let solutions = transformToList("javascript", "solution", JavascriptEditors.solutions)
-                if (solutions.length > 0) {
-                    values.public_solutions.push(...solutions)
-                }
-                let tests = transformToList("javascript", "test", JavascriptEditors.tests)
-                if (tests.length > 0) {
-                    values.public_tests.push(...tests)
-                }
+                JavascriptEditors.fillValuesArray(values, transformToList)
             }
             if (isCppEditors) {
-                values.final_tests.push({code: CppEditors.finalTest.state.doc.toString(), language: "cpp"})
-                let solutions = transformToList("cpp", "solution", CppEditors.solutions)
-                if (solutions.length > 0) {
-                    values.public_solutions.push(...solutions)
-                }
-                let tests = transformToList("cpp", "test", CppEditors.tests)
-                if (tests.length > 0) {
-                    values.public_tests.push(...tests)
-                }
+                CppEditors.fillValuesArray(values, transformToList)
             }
 
             postError = ""
@@ -338,6 +302,6 @@
 
         <br><br>
         <button>Save the task</button>
-        <HelpMessage imageWidthPercentage="120" text="Saved task will appear on the 'Not published' page"/>
+        <HelpMessage imageWidthPercentage="140" text="Saved task will appear on the 'My tasks' page"/>
     </form>
 </div>

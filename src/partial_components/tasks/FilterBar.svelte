@@ -38,7 +38,7 @@
 </script>
 
 <div style="display: flex;">
-    <Input class="d-block d-md-none" bind:value={searchTerm} style="max-width: 50%;" plantext
+    <Input class="d-block d-md-none" bind:value={searchTerm} plantext
            placeholder="Filter tasks by a keyword"></Input>
     <Button class="d-block d-md-none" color="primary" on:click={handleFilter}>Search</Button>
 </div>

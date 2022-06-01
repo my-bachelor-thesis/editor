@@ -5,7 +5,9 @@
     import {get} from "svelte/store"
     import Form from "./partial_components/forms/Form.svelte"
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte"
-    import SuccessMessage from "./partial_components/messages/SuccessMessage.svelte";
+    import SuccessMessage from "./partial_components/messages/SuccessMessage.svelte"
+
+    helpers.redirectIfNotAdmin()
 
     function checkUsernameForUniqueness(username) {
         helpers.isValidUsername(username).then(exists => {

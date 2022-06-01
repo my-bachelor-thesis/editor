@@ -46,7 +46,7 @@
         <p>loading statistic...</p>
     {:then res}
         {#if !res}
-            <h1>Can't make a statistic, there're no user solutions that passed the final test</h1>
+            <h1>Can't make a statistic, there're no user solutions that passed the final tests</h1>
         {:else}
             <h1>Statistic for each language:</h1>
             <br>

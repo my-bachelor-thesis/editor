@@ -149,8 +149,6 @@
                     </div>
                 </AccordionItem>
 
-                <!--TODO: what if timeout-->
-
                 {#await language.testResult.promise}
                     <p>loading...</p>
                 {:then res}

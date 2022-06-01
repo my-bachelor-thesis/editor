@@ -14,8 +14,6 @@
 
     const message = new URLSearchParams(window.location.search).get('msg')
 
-    let logoWidth = Math.floor(window.innerWidth / 1.5) + "px"
-
     let endpoint = "home/all-tasks"
 
     // filters
@@ -49,13 +47,17 @@
         }
         tasksPromise = handleFilterReturns(getPage)
     }
+
+    let innerWidth
 </script>
+
+<svelte:window bind:innerWidth/>
 
 <SuccessMessage msg={message}/>
 
 <div id="logo-home-center">
     <h1 style="font-size: xxx-large">My bachelor's thesis</h1>
-    <img src="images/logo-white.png" alt="" width={logoWidth}>
+    <img src="images/logo-white.png" alt="" width={Math.floor(innerWidth / 1.5)}px>
 </div>
 
 <Container>
@@ -82,19 +84,18 @@
                 {/each}
             </Container>
         </div>
-
-        <MyPagination
-                bind:paginationFetch={paginationFetch}
-                bind:currentPage={currentPage}
-                nextPageFunc={handleFilterReturns}
-        />
-
     {:else}
         <div class="not-found-err">No tasks found</div>
     {/if}
 {:catch error}
     <p style="color: red">{error.message}</p>
 {/await}
+
+<MyPagination
+        bind:paginationFetch={paginationFetch}
+        bind:currentPage={currentPage}
+        nextPageFunc={handleFilterReturns}
+/>
 
 <style>
     #logo-home-center {

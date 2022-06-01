@@ -5,6 +5,8 @@
     import AddTask from "./AddTask.svelte";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
+    helpers.redirectIfNotLoggedIn()
+
     const taskId = new URLSearchParams(window.location.search).get("id")
 
     let fetchSavedSolutionPromise = helpers.fetchJson(`${get(store.url)}/edit-task/get-saved/${taskId}`)

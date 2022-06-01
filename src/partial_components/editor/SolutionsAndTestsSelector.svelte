@@ -51,7 +51,8 @@
 
     <Col class="solutions-and-tests-selector">
         <label for="solution{language.number}-picker-select" class="no-wrap"><b>Select from solutions:</b></label>
-        <HelpMessage text="Solution with 🌐 emoji are public (they were added by the task creator)"/>
+        <HelpMessage imageWidthPercentage="120"
+                     text="Solution with 🌐 emoji are public (they were added by the task creator)"/>
         <Select id="solution{language.number}-picker-select"
                 items={solutions}
                 bind:value={$selectedSolutionStore} isClearable={false}
@@ -72,8 +73,8 @@
 
     <Col class="solutions-and-tests-selector">
         <label for="test{language.number}-picker-select" class="no-wrap"><b>Select from tests:</b></label>
-        <HelpMessage text="Tests with 🌐 emoji are public (they were added by the task creator).
-            Tests with ✔ emoji are final (they were also added by the task creator
+        <HelpMessage imageWidthPercentage="120" text="Tests with 🌐 emoji are public (they were added by the task creator).
+            Tests with ✔ emoji are final (they were added by the task creator
             and you have to solve them in order to participate in the task statistics)"/>
         <Select id="test{language.number}-picker-select"
                 items={tests}

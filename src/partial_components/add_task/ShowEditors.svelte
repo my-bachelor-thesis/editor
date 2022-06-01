@@ -151,7 +151,6 @@
     <br>
     <button on:click={() => addEditor("solution")} type="button">Add public solution</button>
     <button on:click={() => addEditor("test")} type="button">Add public test</button>
-    <HelpMessage imageWidthPercentage="140" text="Users can participate in the task statistics if they solve the final test.
-        You have to write it for every selected language"/>
+    <HelpMessage imageWidthPercentage="140" text="All users can see the public solutions and tests."/>
     <br>
 </div>

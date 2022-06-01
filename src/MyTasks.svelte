@@ -138,16 +138,15 @@
                 {/each}
             </Container>
         </div>
-
-        <MyPagination
-                bind:paginationFetch={paginationFetch}
-                bind:currentPage={currentPage}
-                nextPageFunc={handleFilterReturns}
-        />
-
     {:else}
         <div class="not-found-err">No tasks found</div>
     {/if}
 {:catch error}
     <p style="color: red">{error.message}</p>
 {/await}
+
+<MyPagination
+        bind:paginationFetch={paginationFetch}
+        bind:currentPage={currentPage}
+        nextPageFunc={handleFilterReturns}
+/>
