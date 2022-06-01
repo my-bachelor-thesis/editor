@@ -1,13 +1,8 @@
 <script>
     import {Button, Input} from "sveltestrap";
-    import * as helpers from "../../helpers";
-    import {get} from "svelte/store";
-    import * as store from "../../store";
 
-    export let tasksPromise, endpoint
+    export let currentPage, handleFilter, sortByDate, sortByName, searchTerm, difficulty
 
-    let searchTerm = ""
-    let sortByName = "asc", sortByDate = "desc"
     $: sortDateIcon = sortByDate === "asc" ? "up" : "down"
     $: sortNameIcon = sortByName === "asc" ? "up" : "down"
 
@@ -18,19 +13,12 @@
         return "asc"
     }
 
-    let difficulty
     let difficultyOptions = [
         {id: "all", text: "All difficulties"},
         {id: "easy", text: "Easy"},
         {id: "medium", text: "Medium"},
         {id: "hard", text: "Hard"},
     ]
-
-    function handleFilter(event) {
-        event.preventDefault()
-        tasksPromise = helpers.fetchJson(
-            `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&name=${sortByName}&difficulty=${difficulty}`);
-    }
 
     function handleNameFiler(event) {
         sortByName = ascDescFlip(sortByName)
@@ -43,6 +31,10 @@
     }
 
     let searchBarHeight
+
+    $: if (currentPage) {
+        handleFilter()
+    }
 </script>
 
 <div style="display: flex;">

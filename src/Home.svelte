@@ -1,17 +1,54 @@
 <script>
-    import * as helpers from "./helpers"
-    import * as store from "./store"
-    import {get} from "svelte/store"
     import SuccessMessage from "./partial_components/messages/SuccessMessage.svelte"
     import {Container} from "sveltestrap";
     import Task from "./partial_components/tasks/Task.svelte";
     import FilterBar from "./partial_components/tasks/FilterBar.svelte";
+    import MyPagination from "./partial_components/tasks/MyPagination.svelte";
+    import * as helpers from "./helpers";
+    import {get} from "svelte/store";
+    import * as store from "./store";
 
-    let tasksPromise = helpers.fetchJson(`${get(store.url)}/home/all-tasks`)
+    let currentPage = 1
+
+    let tasksPromise = helpers.getNeverEndingPromise()
 
     const message = new URLSearchParams(window.location.search).get('msg')
 
     let logoWidth = Math.floor(window.innerWidth / 1.5) + "px"
+
+    let endpoint = "home/all-tasks"
+
+    // filters
+
+    let sortByName = "asc", sortByDate = "desc"
+    let searchTerm = ""
+    let difficulty = "all"
+
+    function handleFilterReturns(getPage) {
+        let p = currentPage
+        if (getPage) {
+            p = getPage
+        }
+        return helpers.fetchJson(
+            `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&name=${sortByName}&difficulty=${difficulty}&page=${p}`);
+    }
+
+    let paginationFetch = false
+
+    function doPaginationFetch() {
+        // trigger fetching
+        paginationFetch = !paginationFetch
+    }
+
+    // event and getPage arguments are optional
+    function handleFilter(event, getPage) {
+        if (event) {
+            event.preventDefault()
+            doPaginationFetch()
+            currentPage = 1
+        }
+        tasksPromise = handleFilterReturns(getPage)
+    }
 </script>
 
 <SuccessMessage msg={message}/>
@@ -22,7 +59,14 @@
 </div>
 
 <Container>
-    <FilterBar bind:tasksPromise={tasksPromise} endpoint="home/all-tasks"/>
+    <FilterBar
+            bind:currentPage={currentPage}
+            handleFilter={handleFilter}
+            bind:sortByDate={sortByDate}
+            bind:sortByName={sortByName}
+            bind:searchTerm={searchTerm}
+            bind:difficulty={difficulty}
+    />
     <br>
 </Container>
 
@@ -38,6 +82,13 @@
                 {/each}
             </Container>
         </div>
+
+        <MyPagination
+                bind:paginationFetch={paginationFetch}
+                bind:currentPage={currentPage}
+                nextPageFunc={handleFilterReturns}
+        />
+
     {:else}
         <div class="not-found-err">No tasks found</div>
     {/if}
