@@ -26,7 +26,7 @@
     }
 
     async function fetchSolutionsAndTasks(language) {
-        return helpers.fetchJson(`${url}/solutions-tests/${taskId}/${language}`)
+        return helpers.fetchJson(`${url}/editor/solutions-tests/${taskId}/${language}`)
     }
 
     function idFromTrackNumber(n) {

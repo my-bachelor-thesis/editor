@@ -89,7 +89,7 @@
     // init values //
 
     async function getInitValues() {
-        return helpers.fetchJson(`${url}/init-data/${taskId}`)
+        return helpers.fetchJson(`${url}/editor/init-data/${taskId}`)
     }
 
     // reset gridstyle
@@ -130,7 +130,7 @@
     let showTestResultLanguage1 = false, showTestResultLanguage2 = false
 
     async function fetchCodeOfSolution(id) {
-        return helpers.fetchJson(`${url}/code-of-solution/${id}`)
+        return helpers.fetchJson(`${url}/editor/code-of-solution/${id}`)
     }
 
     function insertSelectedSolutionIntoEditor(language, selected) {
@@ -196,7 +196,7 @@
 
 
     async function fetchCodeOfTest(id) {
-        return helpers.fetchJson(`${url}/code-of-test/${id}`)
+        return helpers.fetchJson(`${url}/editor/code-of-test/${id}`)
     }
 
     function insertSelectedTestIntoEditor(language, selected) {

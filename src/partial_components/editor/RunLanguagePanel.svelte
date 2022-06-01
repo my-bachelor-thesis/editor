@@ -25,7 +25,7 @@
             task_id: parseInt(taskId),
             hash_id: hashId
         })
-        return helpers.postJson(`${url}/${urlParam}/${language.name}`, body)
+        return helpers.postJson(`${url}/editor/${urlParam}/${language.name}`, body)
     }
 
     function insertNewSolutionIntoSelector(solutionHash, data, test_id) {
