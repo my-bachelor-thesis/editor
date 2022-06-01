@@ -197,7 +197,6 @@
     }
 
     function handleLanguageSelect(event) {
-        console.log(event.detail)
         selectedLanguages = event.detail
         if (selectedLanguages === null) {
             isGoEditors = false
@@ -251,7 +250,6 @@
     let languagesInSelector
 
     onMount(() => {
-        console.log(savedTask)
         if (savedTask) {
             $form.title = savedTask.title
             $form.difficulty = savedTask.difficulty

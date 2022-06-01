@@ -41,7 +41,6 @@
             return errs;
         },
         onSubmit: values => {
-            console.log("()", values)
             postError = ""
             message = ""
             helpers.postJson(`${get(store.url)}/account-setting/update-user-info`, JSON.stringify(values)).then(

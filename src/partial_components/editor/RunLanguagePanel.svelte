@@ -137,11 +137,15 @@
 
         {#if showTestResult}
             <Accordion stayOpen>
-                <AccordionItem header="Status">
+                <AccordionItem header="Saving status">
                     <div>
-                        {#each language.infoBoxContent as line}
-                            {line}<br>
-                        {/each}
+                        {#if language.infoBoxContent.length > 0}
+                            {#each language.infoBoxContent as line}
+                                {line}<br>
+                            {/each}
+                        {:else}
+                            None
+                        {/if}
                     </div>
                 </AccordionItem>
 

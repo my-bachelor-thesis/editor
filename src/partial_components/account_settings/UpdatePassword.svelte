@@ -31,7 +31,6 @@
             return errs;
         },
         onSubmit: values => {
-            console.log("(-)", values)
             postError = ""
             message = ""
             helpers.postJson(`${get(store.url)}/account-setting/update-password`, JSON.stringify(values)).then(

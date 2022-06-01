@@ -38,11 +38,6 @@
             reject(err)
         }
     });
-
-    (async () => {
-        let res = await groupedStatisticPromise
-        console.log(res)
-    })()
 </script>
 
 <div class="small-margin">

@@ -103,7 +103,6 @@
                 insertCodeToEditor("test", undefined, finalTest[0].code)
             }
             let numberOfEditors = 1
-            console.log(languageEditors, "le")
             if (savedTask.public_solutions) {
                 let publicSolutions = savedTask.public_solutions.filter(x => x.language === languageEditors.languageName)
                 for (let solution of publicSolutions) {

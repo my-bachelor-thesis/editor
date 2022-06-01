@@ -177,7 +177,6 @@ export function transformSolutionsForSelect(solutions) {
         return res
     }
 
-    console.log("solutions", solutions)
     for (const solution of solutions) {
         res.push({
             value: parseInt(solution.id),
@@ -202,8 +201,6 @@ export function transformTestsForSelect(tests) {
     if (!tests) {
         return res
     }
-
-    console.log("tests", tests)
 
     // let iterator = getIteratorForTransform(tests)
 

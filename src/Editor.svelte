@@ -265,8 +265,6 @@
             return
         }
 
-        console.log(initValues)
-
         helpers.postJson(`${get(store.url)}/not-approved/deny`, JSON.stringify({
             reason: reasonForUnpublish,
             author_id: parseInt(initValues.author_id),
@@ -290,14 +288,32 @@
                                                            class="{task.difficulty}">({task.difficulty})</span>
             <img src="images/question-circle.svg" alt="tooltip" bind:this={titleTooltip} width="2%">
         </h1>
-        <br>
         <Tooltip target={titleTooltip} placement="right">
-            <strong>Added on:</strong> {task.added_on}
-            <strong>Author:</strong> {task.author}
+            <div class="no-wrap"> <strong>Added on:</strong> {task.added_on}</div>
+            <div class="no-wrap"> <strong>Author:</strong> {task.author}</div>
             {#if get(store.isAdmin)}
-                <strong>Approver:</strong> {task.approver} (only admin can see the approver)
+                <div class="no-wrap"> <strong>Approver:</strong> {task.approver}</div> (only admin can see the approver)
             {/if}
         </Tooltip>
+
+        <!-- unpublish modal -->
+
+        {#if get(store.isAdmin)}
+            <Button color="danger" outline on:click={toggleUnpublishModal}>Unpublish the task</Button>
+            <Modal isOpen={isUnpublishModalOpened} {toggleUnpublishModal}>
+                <ModalHeader {toggleUnpublishModal}>Give a reason for unpublishing (it will be sent to the user)
+                </ModalHeader>
+                <ModalBody>
+                    <ErrorMessage msg={unpublishModalError}/>
+                    <Input bind:value={reasonForUnpublish} type="textarea"
+                           placeholder="type the reason here"></Input>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" on:click={unpublishTask}>Unpublish</Button>
+                    <Button color="secondary" on:click={toggleUnpublishModal}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+        {/if}
 
     {:catch error}
         <p class="error-msg">{error.message}</p>
@@ -445,26 +461,6 @@
         bind:showTestResult={showTestResultLanguage2}
         updateTestId={updateTestId}
 />
-
-<!-- unpublish modal -->
-
-{#if get(store.isAdmin)}
-    <br>
-    <Button color="danger" outline on:click={toggleUnpublishModal}>Unpublish the task</Button>
-    <Modal isOpen={isUnpublishModalOpened} {toggleUnpublishModal}>
-        <ModalHeader {toggleUnpublishModal}>Give a reason for unpublishing (it will be sent to the user)
-        </ModalHeader>
-        <ModalBody>
-            <ErrorMessage msg={unpublishModalError}/>
-            <Input bind:value={reasonForUnpublish} type="textarea"
-                   placeholder="type the reason here"></Input>
-        </ModalBody>
-        <ModalFooter>
-            <Button color="primary" on:click={unpublishTask}>Unpublish</Button>
-            <Button color="secondary" on:click={toggleUnpublishModal}>Cancel</Button>
-        </ModalFooter>
-    </Modal>
-{/if}
 
 <style>
     #title-difficulty {

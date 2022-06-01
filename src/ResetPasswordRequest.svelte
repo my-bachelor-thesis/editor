@@ -33,7 +33,6 @@
             return errs;
         },
         onSubmit: values => {
-            console.log("(-)", values)
             postError = ""
             helpers.postJson(`${get(store.url)}/login/reset-password`, JSON.stringify(values)).then(
                 () => {
