@@ -20,16 +20,14 @@
         initialValues: {
             new_email: get(store.email),
         },
-        validate: values => {
-            let errs = {};
-            if (values.new_email === "") {
-                errs["new_email"] = "email can't be empty"
-            } else if (!helpers.validateEmail(values.new_email)) {
-                errs["new_email"] = "email is not valid"
+        validate: _ => {
+            if ($form.new_email === "") {
+                $errors["new_email"] = "email can't be empty"
+            } else if (!helpers.validateEmail($form.new_email)) {
+                $errors["new_email"] = "email is not valid"
             } else {
-                checkEmailForUniqueness(values.new_email)
+                checkEmailForUniqueness($form.new_email)
             }
-            return errs;
         },
         onSubmit: values => {
             postError = ""

@@ -16,21 +16,19 @@
             username: "",
             password: "",
         },
-        validate: values => {
-            let errs = {}
-            if (values.username === "") {
-                errs["username"] = "username can't be empty"
-            } else if (values.username !== undefined) {
-                helpers.isValidUsername(values.username).then(isValid => {
+        validate: _ => {
+            if ($form.username === "") {
+                $errors["username"] = "username can't be empty"
+            } else if ($form.username !== undefined) {
+                helpers.isValidUsername($form.username).then(isValid => {
                     if (!isValid) {
                         $errors.username = "incorrect username"
                     }
                 })
             }
-            if (values.password === "") {
-                errs["password"] = "password can't be empty"
+            if ($form.password === "") {
+                $errors["password"] = "password can't be empty"
             }
-            return errs
         },
         onSubmit: values => {
             postError = ""

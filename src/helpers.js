@@ -47,7 +47,7 @@ export async function postJson(url, content) {
         return data
     }
 
-    if (res.status === 500) {
+    if (res.status === 500 && !data) {
         data = "internal server error"
     }
     throw new Error(data)

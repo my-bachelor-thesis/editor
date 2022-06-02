@@ -25,20 +25,18 @@
             last_name: get(store.lastName),
             username: get(store.username),
         },
-        validate: values => {
-            let errs = {};
-            if (values.first_name === "") {
-                errs["first_name"] = "first name can't be empty"
+        validate: _ => {
+            if ($form.first_name === "") {
+                $errors["first_name"] = "first name can't be empty"
             }
-            if (values.last_name === "") {
-                errs["last_name"] = "last name can't be empty"
+            if ($form.last_name === "") {
+                $errors["last_name"] = "last name can't be empty"
             }
-            if (values.username === "") {
-                errs["username"] = "username can't be empty"
-            } else if (values.username) {
-                checkUsernameForUniqueness(values.username)
+            if ($form.username === "") {
+                $errors["username"] = "username can't be empty"
+            } else if ($form.username) {
+                checkUsernameForUniqueness($form.username)
             }
-            return errs;
         },
         onSubmit: values => {
             postError = ""

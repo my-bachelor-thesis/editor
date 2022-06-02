@@ -289,16 +289,17 @@
             <img src="images/question-circle.svg" alt="tooltip" bind:this={titleTooltip} width="2%">
         </h1>
         <Tooltip target={titleTooltip} placement="right">
-            <div class="no-wrap"> <strong>Added on:</strong> {task.added_on}</div>
-            <div class="no-wrap"> <strong>Author:</strong> {task.author}</div>
+            <div class="no-wrap"><strong>Added on:</strong> {task.added_on}</div>
+            <div class="no-wrap"><strong>Author:</strong> {task.author}</div>
             {#if get(store.isAdmin)}
-                <div class="no-wrap"> <strong>Approver:</strong> {task.approver}</div> (only admin can see the approver)
+                <div class="no-wrap"><strong>Approver:</strong> {task.approver}</div>
+                (only admin can see the approver)
             {/if}
         </Tooltip>
 
         <!-- unpublish modal -->
 
-        {#if get(store.isAdmin)}
+        {#if get(store.isAdmin) && initValues.author_id !== get(store.userId)}
             <Button color="danger" outline on:click={toggleUnpublishModal}>Unpublish the task</Button>
             <Modal isOpen={isUnpublishModalOpened} {toggleUnpublishModal}>
                 <ModalHeader {toggleUnpublishModal}>Give a reason for unpublishing (it will be sent to the user)

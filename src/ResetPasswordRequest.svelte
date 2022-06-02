@@ -21,16 +21,14 @@
         initialValues: {
             registered_email: "",
         },
-        validate: values => {
-            let errs = {};
-            if (values.registered_email === "") {
-                errs["registered_email"] = "email can't be empty"
-            } else if (!helpers.validateEmail(values.registered_email)) {
-                errs["registered_email"] = "email is not valid"
+        validate: _ => {
+            if ($form.registered_email === "") {
+                $errors["registered_email"] = "email can't be empty"
+            } else if (!helpers.validateEmail($form.registered_email)) {
+                $errors["registered_email"] = "email is not valid"
             } else {
-                checkEmailForUniqueness(values.registered_email)
+                checkEmailForUniqueness($form.registered_email)
             }
-            return errs;
         },
         onSubmit: values => {
             postError = ""

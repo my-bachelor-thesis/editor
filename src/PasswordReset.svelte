@@ -15,17 +15,15 @@
             new_password: "",
             repeat_password: "",
         },
-        validate: values => {
-            let errs = {};
-            if (values.new_password === "") {
-                errs["new_password"] = "old password can't be empty"
-            } else if (values.new_password && values.new_password.length < 5) {
-                errs["new_password"] = "new password is too short"
+        validate: _ => {
+            if ($form.new_password === "") {
+                $errors["new_password"] = "old password can't be empty"
+            } else if ($form.new_password && $form.new_password.length < 5) {
+                $errors["new_password"] = "new password is too short"
             }
             if ($form.new_password !== $form.repeat_password) {
-                errs["repeat_password"] = "passwords don't match"
+                $errors["repeat_password"] = "passwords don't match"
             }
-            return errs;
         },
         onSubmit: values => {
             postError = ""

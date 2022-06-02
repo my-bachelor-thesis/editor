@@ -154,9 +154,8 @@
                     }
                 }
             })
-            let editor = helpers.Editor.newEditor(editorsClass.languageName,
+            editorsClass.finalTest = helpers.Editor.newEditor(editorsClass.languageName,
                 document.getElementById(`${editorsClass.languageName}-editor-final-test`), updateExtension)
-            editorsClass.finalTest = editor
         })()
     }
 

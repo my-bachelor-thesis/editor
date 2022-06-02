@@ -24,16 +24,12 @@
         initialValues: {
             username_to_promote: ""
         },
-        validate: values => {
-            let errs = {}
-
-            if (values.username_to_promote === "") {
-                errs["username_to_promote"] = "username can't be empty"
-            } else if (values.username_to_promote) {
-                checkUsernameForUniqueness(values.username_to_promote)
+        validate: _ => {
+            if ($form.username_to_promote === "") {
+                $errors["username_to_promote"] = "username can't be empty"
+            } else if ($form.username_to_promote) {
+                checkUsernameForUniqueness($form.username_to_promote)
             }
-
-            return errs
         },
         onSubmit: values => {
             postError = ""

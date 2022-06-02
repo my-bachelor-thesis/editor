@@ -35,35 +35,33 @@
             password: "",
             repeated_password: ""
         },
-        validate: values => {
-            let errs = {}
-            if (values.first_name === "") {
-                errs["first_name"] = "first name can't be empty"
+        validate: _ => {
+            if ($form.first_name === "") {
+                $errors["first_name"] = "first name can't be empty"
             }
-            if (values.last_name === "") {
-                errs["last_name"] = "last name can't be empty"
+            if ($form.last_name === "") {
+                $errors["last_name"] = "last name can't be empty"
             }
-            if (values.username === "") {
-                errs["username"] = "username can't be empty"
-            } else if (values.username !== undefined) {
-                checkUsernameForUniqueness(values.username)
+            if ($form.username === "") {
+                $errors["username"] = "username can't be empty"
+            } else if ($form.username !== undefined) {
+                checkUsernameForUniqueness($form.username)
             }
-            if (values.email === "") {
-                errs["email"] = "email can't be empty"
-            } else if (!helpers.validateEmail(values.email)) {
-                errs["email"] = "email is not valid"
+            if ($form.email === "") {
+                $errors["email"] = "email can't be empty"
+            } else if (!helpers.validateEmail($form.email)) {
+                $errors["email"] = "email is not valid"
             } else {
-                checkEmailForUniqueness(values.email)
+                checkEmailForUniqueness($form.email)
             }
-            if (values.password === "") {
-                errs["password"] = "password can't be empty"
-            } else if (values.password && values.password.length < 5) {
-                errs["password"] = "password is too short"
+            if ($form.password === "") {
+                $errors["password"] = "password can't be empty"
+            } else if ($form.password && $form.password.length < 5) {
+                $errors["password"] = "password is too short"
             }
             if ($form.password !== $form.repeated_password) {
-                errs["repeated_password"] = "passwords don't match"
+                $errors["repeated_password"] = "passwords don't match"
             }
-            return errs
         },
         onSubmit: values => {
             postError = ""

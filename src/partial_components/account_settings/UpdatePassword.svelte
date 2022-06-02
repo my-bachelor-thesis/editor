@@ -13,22 +13,21 @@
             new_password: "",
             repeat_password: "",
         },
-        validate: values => {
-            let errs = {};
-            if (values.old_password === "") {
-                errs["old_password"] = "old password can't be empty"
+        validate: _ => {
+            $errors = {}
+            if ($form.old_password === "") {
+                $errors["old_password"] = "old password can't be empty"
             }
-            if (values.new_password === "") {
-                errs["new_password"] = "new password can't be empty"
+            if ($form.new_password === "") {
+                $errors["new_password"] = "new password can't be empty"
             } else if ($form.new_password === $form.old_password) {
-                errs["new_password"] = "new password has to be different from the old one"
-            } else if (values.new_password && values.new_password.length < 5) {
-                errs["new_password"] = "new password is too short"
+                $errors["new_password"] = "new password has to be different from the old one"
+            } else if ($form.new_password && $form.new_password.length < 5) {
+                $errors["new_password"] = "new password is too short"
             }
             if ($form.new_password !== $form.repeat_password) {
-                errs["repeat_password"] = "passwords don't match"
+                $errors["repeat_password"] = "passwords don't match"
             }
-            return errs;
         },
         onSubmit: values => {
             postError = ""
