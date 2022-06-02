@@ -56,6 +56,8 @@
         language.solutionsAndTestsSelector.tests.unshift(transformedTest)
     }
 
+    const nothingChangedNotRunning = "nothing changed, not running"
+
     function runSolution() {
         language.infoBoxContent = []
         postError = ""
@@ -83,7 +85,7 @@
                 language.cache.solutionFromLastRun = solutionInEditorHash
                 language.cache.testFromLastRun = testInEditorHash
             } else {
-                language.infoBoxContent = ["nothing changed, not running"]
+                language.infoBoxContent = [nothingChangedNotRunning]
             }
             return
         }
@@ -122,6 +124,8 @@
             updateTestId(get(selectedSolutionStore).value, get(selectedTestStore).value)
         })()
     }
+
+    $: didntRun = language.infoBoxContent.length > 0 && language.infoBoxContent[0] === nothingChangedNotRunning
 </script>
 
 <ErrorMessage msg={postError}/>
@@ -137,7 +141,7 @@
 
         {#if showTestResult}
             <Accordion stayOpen>
-                <AccordionItem header="Saving status">
+                <AccordionItem header="Saving status" active={didntRun}>
                     <div>
                         {#if language.infoBoxContent.length > 0}
                             {#each language.infoBoxContent as line}
