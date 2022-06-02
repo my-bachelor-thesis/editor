@@ -160,7 +160,7 @@
                             <DetailsFromRunErr msg="test failed"></DetailsFromRunErr>
                             <TestOutput output={res.result.output} failed={true}/>
                         {:else}
-                            <AccordionItem header="Details from the run">
+                            <AccordionItem header="Details from the run" active>
                                 <p class="success-msg"><b>test OK</b></p>
                                 <p>compilation time: {res.result.compilation_time} s</p>
                                 <p>real time: {res.result.real_time} s</p>

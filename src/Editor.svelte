@@ -219,6 +219,9 @@
         }
 
         let index = language.solutionsAndTestsSelector.solutions.findIndex(x => x.value === get(selectedSolutionStore).value)
+        if (!language.solutionsAndTestsSelector.solutions[index]) {
+            return
+        }
         language.solutionsAndTestsSelector.solutions[index].test_id = event.value
 
         if (!language.dontHideTestResultWhileInsertingTest) {

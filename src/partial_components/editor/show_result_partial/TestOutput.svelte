@@ -6,7 +6,7 @@
     $: colorClass = failed ? "text-danger" : ""
 </script>
 
-<AccordionItem header="Test output" active>
+<AccordionItem header="Test output" active={failed}>
     <div class="test-output {colorClass}">{decodeURIComponent(output.replace(/[0-9a-f]{2}/g, '%$&'))}</div>
 </AccordionItem>
 

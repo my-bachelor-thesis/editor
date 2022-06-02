@@ -135,6 +135,8 @@ export class Editor {
                     this.#languageToCodemirrorFunction(language),
                     ...additionalExtensions
                 ],
+                smartIndent: true,
+                tabSize: 2,
             }),
             parent: element,
         })
