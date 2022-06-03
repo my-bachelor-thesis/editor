@@ -11,7 +11,7 @@
     import MyPagination from "./partial_components/tasks/MyPagination.svelte";
 
     // redirect if not logged in
-    helpers.redirectIfNotLoggedIn()
+    let skipFetch = helpers.redirectIfNotLoggedIn()
 
     let postError = ""
     let message = new URLSearchParams(window.location.search).get('msg')
@@ -29,7 +29,7 @@
             () => {
                 let index = tasks.findIndex(x => x.id === taskId)
                 tasks[index].is_published = true
-                if (!store.isAdmin) {
+                if (!get(store.isAdmin)) {
                     message = "Published successfully. Your task will have to be reviewed by an admin."
                 } else {
                     message = "Published successfully"
@@ -77,8 +77,11 @@
         if (getPage) {
             p = getPage
         }
-        return helpers.fetchJson(
-            `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&name=${sortByName}&difficulty=${difficulty}&page=${p}`);
+        if (!skipFetch) {
+            return helpers.fetchJson(
+                `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&name=${sortByName}&difficulty=${difficulty}&page=${p}`);
+        }
+        return helpers.getNeverEndingPromise()
     }
 
     let paginationFetch = false

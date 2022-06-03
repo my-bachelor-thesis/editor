@@ -13,7 +13,7 @@
     import {navigate} from "svelte-navigator";
     import HelpMessage from "./partial_components/messages/HelpMessage.svelte";
 
-    export let savedTask
+    export let savedTask = undefined
 
     // reset all
     for (let editor of [CppEditors, GoEditors, JavascriptEditors, PythonEditors]) {

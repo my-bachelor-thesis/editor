@@ -222,13 +222,17 @@ export function transformTestsForSelect(tests) {
 export function redirectIfNotLoggedIn() {
     if (!get(store.username)) {
         navigate("login?msg=Login or Register")
+        return true
     }
+    return false
 }
 
 export function redirectIfNotAdmin() {
     if (!get(store.username) || !(get(store.isAdmin))) {
         navigate("/?msg=You have to be admin to do that")
+        return true
     }
+    return false
 }
 
 export function isLanguageInterpreted(lang) {

@@ -5,7 +5,7 @@
     import {get} from "svelte/store";
     import * as store from "../../store";
 
-    export let postError, message
+    export let postError = undefined, message = undefined
 
     function checkUsernameForUniqueness(name) {
         if (get(store.username) === name) {
@@ -26,6 +26,7 @@
             username: get(store.username),
         },
         validate: _ => {
+            $errors = {}
             if ($form.first_name === "") {
                 $errors["first_name"] = "first name can't be empty"
             }
@@ -37,6 +38,7 @@
             } else if ($form.username) {
                 checkUsernameForUniqueness($form.username)
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

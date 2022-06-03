@@ -25,11 +25,13 @@
             username_to_promote: ""
         },
         validate: _ => {
+            $errors = {}
             if ($form.username_to_promote === "") {
                 $errors["username_to_promote"] = "username can't be empty"
             } else if ($form.username_to_promote) {
                 checkUsernameForUniqueness($form.username_to_promote)
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

@@ -5,7 +5,7 @@
     import {get} from "svelte/store";
     import * as store from "../../store";
 
-    export let postError, message
+    export let postError = undefined, message = undefined
 
     function checkEmailForUniqueness(email) {
         helpers.isValidEmail(email).then(exists => {
@@ -21,6 +21,7 @@
             new_email: get(store.email),
         },
         validate: _ => {
+            $errors = {}
             if ($form.new_email === "") {
                 $errors["new_email"] = "email can't be empty"
             } else if (!helpers.validateEmail($form.new_email)) {
@@ -28,6 +29,7 @@
             } else {
                 checkEmailForUniqueness($form.new_email)
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

@@ -9,7 +9,7 @@
     import FilterBar from "./partial_components/tasks/FilterBar.svelte";
     import MyPagination from "./partial_components/tasks/MyPagination.svelte";
 
-    helpers.redirectIfNotAdmin()
+    let skipFetch = helpers.redirectIfNotAdmin()
 
     let postError = ""
     let message = new URLSearchParams(window.location.search).get('msg')
@@ -77,8 +77,11 @@
         if (getPage) {
             p = getPage
         }
-        return helpers.fetchJson(
-            `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&name=${sortByName}&difficulty=${difficulty}&page=${p}`);
+        if (!skipFetch) {
+            return helpers.fetchJson(
+                `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&name=${sortByName}&difficulty=${difficulty}&page=${p}`);
+        }
+        return helpers.getNeverEndingPromise()
     }
 
     let paginationFetch = false

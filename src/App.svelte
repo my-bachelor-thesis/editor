@@ -131,7 +131,7 @@
             <Home/>
         </Route>
 
-        <Route path="task/*">
+        <Route path="task/*" primary={false}>
             <Editor/>
         </Route>
 
@@ -187,7 +187,7 @@
             <EditTask/>
         </Route>
 
-        <Route path="statistic">
+        <Route path="statistic" primary={false}>
             <Statistic/>
         </Route>
     </main>

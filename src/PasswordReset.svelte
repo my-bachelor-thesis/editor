@@ -16,6 +16,7 @@
             repeat_password: "",
         },
         validate: _ => {
+            $errors = {}
             if ($form.new_password === "") {
                 $errors["new_password"] = "old password can't be empty"
             } else if ($form.new_password && $form.new_password.length < 5) {
@@ -24,6 +25,7 @@
             if ($form.new_password !== $form.repeat_password) {
                 $errors["repeat_password"] = "passwords don't match"
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

@@ -6,7 +6,7 @@
     import {get} from "svelte/store";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
-    export let postError
+    export let postError = undefined
 
     function checkEmailForUniqueness(email) {
         helpers.isValidEmail(email).then(exists => {
@@ -22,6 +22,7 @@
             registered_email: "",
         },
         validate: _ => {
+            $errors = {}
             if ($form.registered_email === "") {
                 $errors["registered_email"] = "email can't be empty"
             } else if (!helpers.validateEmail($form.registered_email)) {
@@ -29,6 +30,7 @@
             } else {
                 checkEmailForUniqueness($form.registered_email)
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

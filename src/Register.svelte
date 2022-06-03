@@ -36,6 +36,7 @@
             repeated_password: ""
         },
         validate: _ => {
+            $errors = {}
             if ($form.first_name === "") {
                 $errors["first_name"] = "first name can't be empty"
             }
@@ -62,6 +63,7 @@
             if ($form.password !== $form.repeated_password) {
                 $errors["repeated_password"] = "passwords don't match"
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

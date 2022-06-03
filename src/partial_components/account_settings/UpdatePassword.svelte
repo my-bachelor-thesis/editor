@@ -5,7 +5,7 @@
     import {get} from "svelte/store";
     import * as store from "../../store";
 
-    export let postError, message
+    export let postError = undefined, message = undefined
 
     const {form, errors, state, handleChange, handleSubmit} = createForm({
         initialValues: {
@@ -28,6 +28,7 @@
             if ($form.new_password !== $form.repeat_password) {
                 $errors["repeat_password"] = "passwords don't match"
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

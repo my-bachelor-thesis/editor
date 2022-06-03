@@ -5,11 +5,14 @@
     import AddTask from "./AddTask.svelte";
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
-    helpers.redirectIfNotLoggedIn()
+    let skipFetch = helpers.redirectIfNotLoggedIn()
 
     const taskId = new URLSearchParams(window.location.search).get("id")
 
-    let fetchSavedSolutionPromise = helpers.fetchJson(`${get(store.url)}/edit-task/get-saved/${taskId}`)
+    let fetchSavedSolutionPromise = helpers.getNeverEndingPromise()
+    if (!skipFetch) {
+        fetchSavedSolutionPromise = helpers.fetchJson(`${get(store.url)}/edit-task/get-saved/${taskId}`)
+    }
 </script>
 
 {#await fetchSavedSolutionPromise}

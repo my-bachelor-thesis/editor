@@ -17,6 +17,7 @@
             password: "",
         },
         validate: _ => {
+            $errors = {}
             if ($form.username === "") {
                 $errors["username"] = "username can't be empty"
             } else if ($form.username !== undefined) {
@@ -29,6 +30,7 @@
             if ($form.password === "") {
                 $errors["password"] = "password can't be empty"
             }
+            return $errors
         },
         onSubmit: values => {
             postError = ""

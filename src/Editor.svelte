@@ -16,7 +16,7 @@
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
 
     // redirect if not logged in
-    helpers.redirectIfNotLoggedIn()
+    let skipFetch = helpers.redirectIfNotLoggedIn()
 
     // variables //
 
@@ -25,7 +25,11 @@
     let isSecondLanguageIsSelected = false
 
     const taskId = new URLSearchParams(window.location.search).get("id")
-    let initValuesPromise = getInitValues()
+
+    let initValuesPromise = helpers.getNeverEndingPromise()
+    if (!skipFetch) {
+        initValuesPromise = getInitValues()
+    }
 
     // insert initValues into a variable when they arrive
     let initValues
@@ -246,7 +250,10 @@
     }
 
     // getting data about last opened solutions
-    let lastOpened = helpers.fetchJson(`${url}/editor/get-last-opened/${taskId}`)
+    let lastOpened
+    if (!skipFetch) {
+        lastOpened = helpers.fetchJson(`${url}/editor/get-last-opened/${taskId}`)
+    }
 
     // unpublish modal
 
