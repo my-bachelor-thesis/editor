@@ -1,10 +1,13 @@
 <script>
     import {Button, Input} from "sveltestrap";
 
-    export let currentPage, handleFilter, sortByDate, sortByName, searchTerm, difficulty
+    export let currentPage, handleFilter, sortByDate, sortByName, searchTerm, difficulty, notPublished = undefined,
+        showNotPublished = undefined
 
     $: sortDateIcon = sortByDate === "asc" ? "up" : "down"
     $: sortNameIcon = sortByName === "asc" ? "up" : "down"
+
+    $: notPublishedText = notPublished ? "Show all" : "Not published"
 
     function ascDescFlip(s) {
         if (s === "asc") {
@@ -27,6 +30,11 @@
 
     function handleDateFilter(event) {
         sortByDate = ascDescFlip(sortByDate)
+        handleFilter(event)
+    }
+
+    function handleNotPublished(event) {
+        notPublished = notPublished ? "" : "true"
         handleFilter(event)
     }
 
@@ -58,9 +66,15 @@
     </Button>
     <img style="margin-right: 1%" height="{searchBarHeight}" src="images/sort-{sortNameIcon}.svg" alt="sort down">
 
-    <select bind:value={difficulty} on:change="{handleFilter}">
+    <select bind:value={difficulty} on:change="{handleFilter}" style="margin-right: 0.6%">
         {#each difficultyOptions as option}
             <option value="{option.id}">{option.text}</option>
         {/each}
     </select>
+
+    {#if showNotPublished}
+        <Button outline color="secondary" on:click={handleNotPublished}
+                style="margin-left: 1%;outline: none;"><span class="no-wrap">{notPublishedText}</span>
+        </Button>
+    {/if}
 </div>
