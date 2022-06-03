@@ -183,7 +183,7 @@
             <PasswordReset/>
         </Route>
 
-        <Route path="edit-task">
+        <Route path="edit-task" primary={false}>
             <EditTask/>
         </Route>
 

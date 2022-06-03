@@ -15,13 +15,19 @@
 
     export let savedTask = undefined
 
+    // redirect if not logged in
+    let skipFetch = helpers.redirectIfNotLoggedIn()
+
+
+    if (savedTask && savedTask.is_published) {
+        helpers.redirectToHomeWithMessage("Can't edit")
+        skipFetch = true
+    }
+
     // reset all
     for (let editor of [CppEditors, GoEditors, JavascriptEditors, PythonEditors]) {
         editor.reset()
     }
-
-    // redirect if not logged in
-    helpers.redirectIfNotLoggedIn()
 
     const languages = [
         {value: "go", label: 'Go'},
@@ -213,16 +219,20 @@
     let languagesInSelector
 
     onMount(() => {
-        if (savedTask) {
+        if (savedTask && !skipFetch) {
             $form.title = savedTask.title
             $form.difficulty = savedTask.difficulty
 
+            // document.getElementById("editor").firstChild.firstChild.replaceWith()
             const editorDiv = document.getElementById("editor")
-            let pToReplace = editorDiv.querySelector(":scope p")
-            let newPDiv = document.createElement("div")
-            newPDiv.innerHTML = savedTask.description
-            let newP = newPDiv.firstElementChild
-            pToReplace.parentNode.replaceChild(newP, pToReplace)
+            editorDiv.firstChild.firstChild.remove()
+            editorDiv.firstChild.insertAdjacentHTML("afterbegin", savedTask.description)
+            // let pToReplace = editorDiv.querySelector(":scope p")
+            // pToReplace
+            // let newPDiv = document.createElement("div")
+            // newPDiv.innerHTML = savedTask.description
+            // let newP = newPDiv.firstElementChild
+            // pToReplace.parentNode.replaceChild(newP, pToReplace)
 
             languagesInSelector = savedTask.final_tests.map(x => ({
                 value: x.language,

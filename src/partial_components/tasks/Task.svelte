@@ -7,6 +7,10 @@
     function redirectToStatisticPage() {
         navigate(`statistic?task-id=${task.id}`)
     }
+
+    function getFirstWords(description) {
+        return description.replace(/(<([^>]+)>)/gi, "").replace(/\s+/g, " ").trim().substring(0, 150)
+    }
 </script>
 
 <Row>
@@ -15,13 +19,9 @@
         <br><br>
         <div class="task-fields">
             <div><b>Difficulty: </b><span class="{task.difficulty}">{task.difficulty}</span></div>
-            {#if task.text.length > 150}
-                <div><b>Description: </b>{@html task.text.substring(0, 150).replace(/[\r\n]/gm, ' ')}...
-                    <Link style="color: grey;" to="/task?id={task.id}"><b>more</b></Link>
+                <div><b>Description: </b>{getFirstWords(task.text)}...
+                    <Link style="color: grey;" to="/task?id={task.id}"><b> more</b></Link>
                 </div>
-            {:else}
-                <div><b>Description: </b>{@html task.text.replace(/[\r\n]/gm, ' ')}</div>
-            {/if}
             <div><b>Added on: </b>{task.added_on}</div>
         </div>
         {#if showStatistic}

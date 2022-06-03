@@ -33,7 +33,12 @@
 
     // insert initValues into a variable when they arrive
     let initValues
-    initValuesPromise.then(res => initValues = res)
+    initValuesPromise.then(res => {
+        initValues = res
+        if (res.approver_id === 0 && res.author_id !== get(store.userId)) {
+            helpers.redirectToHomeWithMessage("Not your task")
+        }
+    })
 
     let filters = {
         showFinalTests: false,

@@ -137,7 +137,7 @@
 <br>
 <div>
     <h5 style="display:inline-block;">Final test</h5>
-    <HelpMessage imageWidthPercentage="120" style="display:inline-block;" text="Users can participate in the task statistics if they solve the final test.
+    <HelpMessage imageWidthPercentage="120" text="Users can participate in the task statistics if they solve the final test.
         You have to write it for every selected language."/>
     <Button style="display:inline-block;" outline size="sm" on:click={() => insertCodeToEditor("test")} type="button">
         Insert example test

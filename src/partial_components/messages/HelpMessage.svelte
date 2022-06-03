@@ -2,7 +2,7 @@
     import {Tooltip} from 'sveltestrap';
 
     let img
-    export let text, imageWidthPercentage
+    export let text = undefined, imageWidthPercentage = undefined
     if (!imageWidthPercentage) {
         imageWidthPercentage = 100
     }
