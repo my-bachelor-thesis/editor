@@ -56,13 +56,12 @@
            placeholder="Filter tasks by a keyword"></Input>
     <Button class="d-none d-md-block" color="primary" on:click={handleFilter} style="margin-right: 3%;">Search</Button>
 
-    <Button outline color="secondary" on:click={handleDateFilter}
-            style="outline: none;">Date
+    <Button outline color="secondary" on:click={handleDateFilter}>Date
     </Button>
     <img height="{searchBarHeight}" src="images/sort-{sortDateIcon}.svg" alt="sort up">
 
     <Button outline color="secondary" on:click={handleNameFiler}
-            style="margin-left: 1%;outline: none;">Name
+            style="margin-left: 1%;">Name
     </Button>
     <img style="margin-right: 1%" height="{searchBarHeight}" src="images/sort-{sortNameIcon}.svg" alt="sort down">
 
@@ -73,8 +72,16 @@
     </select>
 
     {#if showNotPublished}
-        <Button outline color="secondary" on:click={handleNotPublished}
-                style="margin-left: 1%;outline: none;"><span class="no-wrap">{notPublishedText}</span>
+        <Button class="d-none d-md-block" outline color="secondary" on:click={handleNotPublished}
+                style="margin-left: 1%;"><span class="no-wrap">{notPublishedText}</span>
         </Button>
     {/if}
 </div>
+
+{#if showNotPublished}
+    <div style="display: flex;">
+        <Button class="d-block d-md-none" outline color="secondary" on:click={handleNotPublished}>
+            <span class="no-wrap">{notPublishedText}</span>
+        </Button>
+    </div>
+{/if}
