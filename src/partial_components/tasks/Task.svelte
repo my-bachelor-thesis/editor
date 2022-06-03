@@ -9,7 +9,7 @@
     }
 
     function getFirstWords(description) {
-        return description.replace(/(<([^>]+)>)/gi, "").replace(/\s+/g, " ").trim().substring(0, 150)
+        return description.replace(/<\/p>/g, " ").replace(/(<([^>]+)>)/gi, "").replace(/\s+/g, " ").trim().substring(0, 150)
     }
 </script>
 
@@ -19,9 +19,9 @@
         <br><br>
         <div class="task-fields">
             <div><b>Difficulty: </b><span class="{task.difficulty}">{task.difficulty}</span></div>
-                <div><b>Description: </b>{getFirstWords(task.text)}...
-                    <Link style="color: grey;" to="/task?id={task.id}"><b> more</b></Link>
-                </div>
+            <div><b>Description: </b>{getFirstWords(task.text)}...
+                <Link style="color: grey;" to="/task?id={task.id}"><b> more</b></Link>
+            </div>
             <div><b>Added on: </b>{task.added_on}</div>
         </div>
         {#if showStatistic}
