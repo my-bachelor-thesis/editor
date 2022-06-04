@@ -4,7 +4,7 @@
     import {get} from "svelte/store"
     import * as store from "./store"
     import ErrorMessage from "./partial_components/messages/ErrorMessage.svelte";
-    import {Container} from "sveltestrap";
+    import {Button, Container, Modal, ModalBody, ModalFooter, ModalHeader} from "sveltestrap";
     import Task from "./partial_components/tasks/Task.svelte";
     import {navigate} from "svelte-navigator";
     import FilterBar from "./partial_components/tasks/FilterBar.svelte";
@@ -49,6 +49,7 @@
     }
 
     function handleDelete(taskId) {
+        deleteModalToggle()
         helpers.postJson(`${get(store.url)}/my-tasks/delete`, JSON.stringify({id: taskId})).then(
             () => {
                 tasks.splice(tasks.findIndex(t => t.id === taskId), 1)
@@ -101,6 +102,9 @@
         }
         tasksPromise = handleFilterReturns(getPage)
     }
+
+    let deleteModalOpened = false
+    const deleteModalToggle = () => (deleteModalOpened = !deleteModalOpened)
 </script>
 
 <h1 class="small-margin">My tasks</h1>
@@ -138,7 +142,17 @@
                     {:else}
                         <button on:click={() => handlePublish(task.id)}>Publish</button>
                         <button on:click={() => handleEdit(task.id)}>Edit</button>
-                        <button on:click={() => handleDelete(task.id)}>Delete</button>
+                        <button on:click={deleteModalToggle}>Delete</button>
+                        <Modal isOpen={deleteModalOpened} {deleteModalToggle}>
+                            <ModalHeader {deleteModalToggle}>Delete task</ModalHeader>
+                            <ModalBody>
+                                This task will be deleted
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="primary" on:click={() => handleDelete(task.id)}>Delete</Button>
+                                <Button color="secondary" on:click={deleteModalToggle}>Cancel</Button>
+                            </ModalFooter>
+                        </Modal>
                     {/if}
                     <hr>
                 {/each}
