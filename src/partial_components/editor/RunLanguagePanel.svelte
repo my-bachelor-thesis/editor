@@ -75,7 +75,7 @@
             return
         }
 
-        let hashId = paringFunction(solutionInEditorHash, testInEditorHash)
+        let hashId = paringFunction(md5(solutionInEditor.replace(/\s\s+/g, ' ')), md5(testInEditor.replace(/\s\s+/g, ' ')))
 
         if (language.cache.solutionFromLastRun === solutionInEditorHash && language.cache.testFromLastRun === testInEditorHash) {
             if (!showTestResult) {

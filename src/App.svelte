@@ -127,7 +127,7 @@
     </Navbar>
 
     <main>
-        <Route path="/">
+        <Route path="/" primary={false}>
             <Home/>
         </Route>
 
@@ -135,51 +135,51 @@
             <Editor/>
         </Route>
 
-        <Route path="login">
+        <Route path="login" primary={false}>
             <Login/>
         </Route>
 
-        <Route path="register">
+        <Route path="register" primary={false}>
             <Register/>
         </Route>
 
-        <Route path="add-task">
+        <Route path="add-task" primary={false}>
             <AddTask/>
         </Route>
 
-        <Route path="approve">
+        <Route path="approve" primary={false}>
             <Approve/>
         </Route>
 
-        <Route path="my-tasks">
+        <Route path="my-tasks" primary={false}>
             <MyTasks/>
         </Route>
 
-        <Route path="logout">
+        <Route path="logout" primary={false}>
             <Logout/>
         </Route>
 
-        <Route path="about">
+        <Route path="about" primary={false}>
             <About/>
         </Route>
 
-        <Route path="account-settings">
+        <Route path="account-settings" primary={false}>
             <AccountSettings/>
         </Route>
 
-        <Route path="promote-user">
+        <Route path="promote-user" primary={false}>
             <PromoteUser/>
         </Route>
 
-        <Route path="email-verification">
+        <Route path="email-verification" primary={false}>
             <VerifyEmail/>
         </Route>
 
-        <Route path="reset-password-request">
+        <Route path="reset-password-request" primary={false}>
             <ResetPasswordRequest/>
         </Route>
 
-        <Route path="password-reset">
+        <Route path="password-reset" primary={false}>
             <PasswordReset/>
         </Route>
 
