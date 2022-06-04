@@ -3,6 +3,7 @@
     import * as store from "./store"
     import {get} from "svelte/store"
     import {Table} from 'sveltestrap'
+    import HelpMessage from "./partial_components/messages/HelpMessage.svelte";
 
     const taskId = new URLSearchParams(window.location.search).get("task-id");
     let url = get(store.url);
@@ -48,7 +49,10 @@
         {#if !res}
             <h1>Can't make a statistic, there're no user solutions that passed the final tests</h1>
         {:else}
-            <h1>Statistic for each language:</h1>
+            <h1>Statistic for each language:
+                <HelpMessage imageWidthPercentage="200"
+                             text="Statistic consists of the fastest solutions. Each user is included only once per language"/>
+            </h1>
             <br>
 
             {#each [...res] as [language, arrInfo]}
