@@ -1,11 +1,10 @@
 <script>
     import {Button, Input} from "sveltestrap";
 
-    export let currentPage, handleFilter, sortByDate, sortByName, searchTerm, difficulty, notPublished = undefined,
+    export let currentPage, handleFilter, sortByDate, searchTerm, difficulty, notPublished = undefined,
         showNotPublished = undefined
 
     $: sortDateIcon = sortByDate === "asc" ? "up" : "down"
-    $: sortNameIcon = sortByName === "asc" ? "up" : "down"
 
     $: notPublishedText = notPublished ? "Show all" : "Not published"
 
@@ -22,11 +21,6 @@
         {id: "medium", text: "Medium"},
         {id: "hard", text: "Hard"},
     ]
-
-    function handleNameFiler(event) {
-        sortByName = ascDescFlip(sortByName)
-        handleFilter(event)
-    }
 
     function handleDateFilter(event) {
         sortByDate = ascDescFlip(sortByDate)
@@ -54,16 +48,11 @@
 <div style="display: flex;" bind:clientHeight={searchBarHeight}>
     <Input class="d-none d-md-block" bind:value={searchTerm} style="max-width: 50%;" plantext
            placeholder="Filter tasks by a keyword"></Input>
-    <Button class="d-none d-md-block" color="primary" on:click={handleFilter} style="margin-right: 3%;">Search</Button>
+    <Button class="d-none d-md-block" color="primary" on:click={handleFilter} style="margin-right: 2%;">Search</Button>
 
     <Button outline color="secondary" on:click={handleDateFilter}>Date
     </Button>
-    <img height="{searchBarHeight}" src="images/sort-{sortDateIcon}.svg" alt="sort up">
-
-    <Button outline color="secondary" on:click={handleNameFiler}
-            style="margin-left: 1%;">Name
-    </Button>
-    <img style="margin-right: 1%" height="{searchBarHeight}" src="images/sort-{sortNameIcon}.svg" alt="sort down">
+    <img height="{searchBarHeight}" src="images/sort-{sortDateIcon}.svg" alt="sort up" style="margin-right: 0.6%">
 
     <select bind:value={difficulty} on:change="{handleFilter}" style="margin-right: 0.6%">
         {#each difficultyOptions as option}

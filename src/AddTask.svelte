@@ -223,16 +223,9 @@
             $form.title = savedTask.title
             $form.difficulty = savedTask.difficulty
 
-            // document.getElementById("editor").firstChild.firstChild.replaceWith()
             const editorDiv = document.getElementById("editor")
             editorDiv.firstChild.firstChild.remove()
             editorDiv.firstChild.insertAdjacentHTML("afterbegin", savedTask.description)
-            // let pToReplace = editorDiv.querySelector(":scope p")
-            // pToReplace
-            // let newPDiv = document.createElement("div")
-            // newPDiv.innerHTML = savedTask.description
-            // let newP = newPDiv.firstElementChild
-            // pToReplace.parentNode.replaceChild(newP, pToReplace)
 
             languagesInSelector = savedTask.final_tests.map(x => ({
                 value: x.language,

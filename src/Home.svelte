@@ -18,7 +18,7 @@
 
     // filters
 
-    let sortByName = "asc", sortByDate = "desc"
+    let sortByDate = "desc"
     let searchTerm = ""
     let difficulty = "all"
 
@@ -28,7 +28,7 @@
             p = getPage
         }
         return helpers.fetchJson(
-            `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&name=${sortByName}&difficulty=${difficulty}&page=${p}`);
+            `${get(store.url)}/${endpoint}?search=${searchTerm}&date=${sortByDate}&difficulty=${difficulty}&page=${p}`);
     }
 
     let paginationFetch = false
@@ -65,7 +65,6 @@
             bind:currentPage={currentPage}
             handleFilter={handleFilter}
             bind:sortByDate={sortByDate}
-            bind:sortByName={sortByName}
             bind:searchTerm={searchTerm}
             bind:difficulty={difficulty}
     />

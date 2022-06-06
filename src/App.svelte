@@ -31,6 +31,7 @@
     import VerifyEmail from "./VerifyEmail.svelte";
     import PasswordReset from "./PasswordReset.svelte";
     import EditTask from "./EditTask.svelte";
+    import CodeOfSolution from "./CodeOfSolution.svelte";
 
     helpers.setStorage()
 
@@ -189,6 +190,10 @@
 
         <Route path="statistic" primary={false}>
             <Statistic/>
+        </Route>
+
+        <Route path="user-solution/*" primary={false}>
+            <CodeOfSolution/>
         </Route>
     </main>
 </Router>

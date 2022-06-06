@@ -4,6 +4,7 @@
     import {get} from "svelte/store"
     import {Table} from 'sveltestrap'
     import HelpMessage from "./partial_components/messages/HelpMessage.svelte";
+    import {Link} from "svelte-navigator";
 
     const taskId = new URLSearchParams(window.location.search).get("task-id");
     let url = get(store.url);
@@ -11,8 +12,6 @@
     let statisticPromise = fetchJson(`${url}/statistic/${taskId}`)
 
     let tableContent
-
-    // also aoutput if lang is interpreted (see helsper)
 
     let groupedStatisticPromise = new Promise(async (resolve, reject) => {
         try {
@@ -69,6 +68,9 @@
                         <th>Compilation time</th>
                         <th>Binary size</th>
                         <th>Username</th>
+                        {#if get(store.isAdmin)}
+                            <th>Code of solution</th>
+                        {/if}
                     </tr>
                     </thead>
                     <tbody>
@@ -83,6 +85,12 @@
                             <td>{info.compilation_time} s</td>
                             <td>{info.binary_size} MB</td>
                             <td>{info.username}</td>
+                            {#if get(store.isAdmin)}
+                                <td>
+                                    <Link style="color: grey;" to="/user-solution?id={info.solution_id}">click to show
+                                    </Link>
+                                </td>
+                            {/if}
                         </tr>
                     {/each}
 

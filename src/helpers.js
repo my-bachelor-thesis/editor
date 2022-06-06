@@ -204,8 +204,6 @@ export function transformTestsForSelect(tests) {
         return res
     }
 
-    // let iterator = getIteratorForTransform(tests)
-
     for (const test of tests) {
         res.push({
             value: parseInt(test.id),
