@@ -102,7 +102,7 @@
     }
 </script>
 
-<h1 class="small-margin">My tasks</h1>
+<h1 class="small-margin">Approve tasks</h1>
 
 <SuccessMessage msg={message}/>
 <ErrorMessage msg={postError}/>
